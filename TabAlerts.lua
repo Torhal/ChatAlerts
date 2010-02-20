@@ -170,182 +170,135 @@ end
 -------------------------------------------------------------------------------
 local options
 
+local CHAT_OPTIONS = {
+	"ACHIEVEMENT",
+	"BATTLEGROUND",
+	"BATTLEGROUND_LEADER",
+	"EMOTE",
+	"GUILD",
+	"GUILD_OFFICER",
+	"GUILD_ACHIEVEMENT",
+	"PARTY",
+	"PARTY_LEADER",
+	"RAID",
+	"RAID_LEADER",
+	"RAID_WARNING",
+	"SAY",
+	"WHISPER",
+	"YELL",
+}
+
+local CREATURE_OPTIONS = {
+	"MONSTER_BOSS_EMOTE",
+	"MONSTER_BOSS_WHISPER",
+	"MONSTER_EMOTE",
+	"MONSTER_SAY",
+	"MONSTER_WHISPER",
+	"MONSTER_YELL",
+}
+
+local COMBAT_OPTIONS = {
+	"COMBAT_FACTION_CHANGE",
+	"COMBAT_HONOR_GAIN",
+	"COMBAT_MISC_INFO",
+	"COMBAT_XP_GAIN",
+	"LOOT",
+	"MONEY",
+	"OPENING",
+	"PET_INFO",
+	"SKILL",
+	"TRADESKILLS",
+}
+
+local PVP_OPTIONS = {
+	"BG_SYSTEM_ALLIANCE",
+	"BG_SYSTEM_HORDE",
+	"BG_SYSTEM_NEUTRAL",
+}
+
+local OTHER_OPTIONS = {
+	"AFK",
+--	"CHANNEL",
+	"DND",
+--	"ERRORS",
+	"IGNORED",
+	"SYSTEM",
+}
+
+local function BuildOptionArgs(arg_table, options)
+	for index, section in ipairs(options) do
+		local low_section = section:lower()
+
+		arg_table[low_section] = {
+			order	= index,
+			type	= "toggle",
+			width	= "double",
+			name	= _G[section] or _G[LISTEN_EVENTS[section]],
+			desc	= _G.BINDING_NAME_TOGGLECHATTAB,
+			get	= function()
+					  return db.listen[section]
+				  end,
+			set	= function(info, value)
+					  local event = LISTEN_EVENTS[section]
+
+					  db.listen[section] = value
+
+					  if value then
+						  TabAlerts:RegisterEvent(event, FlashTab)
+						  Debug(event, "Registered")
+					  else
+						  TabAlerts:UnregisterEvent(event)
+						  Debug(event, "Unregistered")
+					  end
+				  end,
+		}
+	end
+end
+
 local function GetOptions()
 	if not options then
 		options = {
-			name = ADDON_NAME.." - ".._G.PLAYER_MESSAGES,
+			name = ADDON_NAME,
 			type = "group",
+			childGroups = "tab",
 			args = {
-				battleground = {
-					order	= 10,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_BATTLEGROUND,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.BATTLEGROUND
-						  end,
-					set	= function(info, value)
-							  db.listen.BATTLEGROUND = value
-						  end,
+				chat = {
+					name = _G.PLAYER_MESSAGES,
+					order = 10,
+					type = "group",
+					args = {}
 				},
-				battleground_leader = {
-					order	= 20,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_BATTLEGROUND_LEADER,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.BATTLEGROUND_LEADER
-						  end,
-					set	= function(info, value)
-							  db.listen.BATTLEGROUND_LEADER = value
-						  end,
+				creature = {
+					name = _G.CREATURE_MESSAGES,
+					order = 20,
+					type = "group",
+					args = {}
 				},
-				emote = {
-					order	= 30,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_EMOTE,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.EMOTE
-						  end,
-					set	= function(info, value)
-							  db.listen.EMOTE = value
-						  end,
+				combat = {
+					name = _G.COMBAT,
+					order = 30,
+					type = "group",
+					args = {}
 				},
-				guild = {
-					order	= 40,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_GUILD,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.GUILD
-						  end,
-					set	= function(info, value)
-							  db.listen.GUILD = value
-						  end,
+				pvp = {
+					name = _G.PVP,
+					order = 40,
+					type = "group",
+					args = {}
 				},
-				guild_officer = {
-					order	= 50,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_OFFICER,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.GUILD_OFFICER
-						  end,
-					set	= function(info, value)
-							  db.listen.GUILD_OFFICER = value
-						  end,
+				other = {
+					name = _G.OTHER,
+					order = 50,
+					type = "group",
+					args = {}
 				},
-				guild_achievement = {
-					order	= 60,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_GUILD_ACHIEVEMENT,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.GUILD_ACHIEVEMENT
-						  end,
-					set	= function(info, value)
-							  db.listen.GUILD_ACHIEVEMENT = value
-						  end,
-				},
-				party = {
-					order	= 50,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_PARTY,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.PARTY
-						  end,
-					set	= function(info, value)
-							  db.listen.PARTY = value
-						  end,
-				},
-				party_leader = {
-					order	= 60,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_PARTY_LEADER,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.PARTY_LEADER
-						  end,
-					set	= function(info, value)
-							  db.listen.PARTY_LEADER = value
-						  end,
-				},
-				raid = {
-					order	= 70,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_RAID,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.RAID
-						  end,
-					set	= function(info, value)
-							  db.listen.RAID = value
-						  end,
-				},
-				raid_leader = {
-					order	= 80,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_RAID_LEADER,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.RAID_LEADER
-						  end,
-					set	= function(info, value)
-							  db.listen.RAID_LEADER = value
-						  end,
-				},
-				raid_warning = {
-					order	= 70,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_RAID_WARNING,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.RAID_WARNING
-						  end,
-					set	= function(info, value)
-							  db.listen.RAID_WARNING = value
-						  end,
-				},
-				say = {
-					order	= 110,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_SAY,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.SAY
-						  end,
-					set	= function(info, value)
-							  db.listen.SAY = value
-						  end,
-				},
-				whisper = {
-					order	= 110,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_WHISPER,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.WHISPER
-						  end,
-					set	= function(info, value)
-							  db.listen.WHISPER = value
-						  end,
-				},
-				yell = {
-					order	= 120,
-					type	= "toggle",
-					name	= _G.CHAT_MSG_YELL,
-					desc	= _G.BINDING_NAME_TOGGLECHATTAB,
-					get	= function()
-							  return db.listen.YELL
-						  end,
-					set	= function(info, value)
-							  db.listen.YELL = value
-						  end,
-				},
-			},
+			}
 		}
+		BuildOptionArgs(options.args.chat.args, CHAT_OPTIONS)
+		BuildOptionArgs(options.args.creature.args, CREATURE_OPTIONS)
+		BuildOptionArgs(options.args.combat.args, COMBAT_OPTIONS)
+		BuildOptionArgs(options.args.pvp.args, PVP_OPTIONS)
+		BuildOptionArgs(options.args.other.args, OTHER_OPTIONS)
 	end
 	return options
 end
