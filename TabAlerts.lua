@@ -103,12 +103,12 @@ function TabAlerts:OnEnable()
 		label	= ADDON_NAME,
 		icon	= [[Interface\CHATFRAME\UI-ChatIcon-Chat-Up]],
 		OnClick	= function(display, button)
-				  local options_frame = InterfaceOptionsFrame
+				  local options_frame = _G.InterfaceOptionsFrame
 
 				  if options_frame:IsVisible() then
 					  options_frame:Hide()
 				  else
-					  InterfaceOptionsFrame_OpenToCategory(TabAlerts.options_frame)
+					  _G.InterfaceOptionsFrame_OpenToCategory(TabAlerts.options_frame)
 				  end
 			  end,
 	})
