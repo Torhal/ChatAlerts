@@ -79,20 +79,11 @@ function TabAlerts:OnInitialize()
 	local defaults = {
 		global = {
 			listen = {
-				["BATTLEGROUND"]	= false,
-				["BATTLEGROUND_LEADER"]	= false,
-				["EMOTE"]		= false,
 				["GUILD"]		= true,
 				["GUILD_OFFICER"]	= true,
-				["GUILD_ACHIEVEMENT"]	= false,
 				["PARTY"]		= true,
 				["PARTY_LEADER"]	= true,
-				["RAID"]		= false,
-				["RAID_LEADER"]		= false,
-				["RAID_WARNING"]	= false,
-				["SAY"]			= false,
 				["WHISPER"]		= true,
-				["YELL"]		= false,
 			}
 		}
 	}
