@@ -153,10 +153,16 @@ function TabAlerts:OnEnable()
 				  end
 			  end,
 	})
-	self:RegisterEvent("CHAT_MSG_GUILD", FlashTab)
-	self:RegisterEvent("CHAT_MSG_OFFICER", FlashTab)
-	self:RegisterEvent("CHAT_MSG_PARTY", FlashTab)
-	self:RegisterEvent("CHAT_MSG_WHISPER", FlashTab)
+
+	-- Register for configured events.
+	for type, toggled in pairs(db.listen) do
+		if toggled then
+			local reg_event = LISTEN_EVENTS[type]
+
+			self:RegisterEvent(reg_event, FlashTab)
+			Debug("OnEnable()", reg_event, "Registered")
+		end
+	end
 end
 
 -------------------------------------------------------------------------------
