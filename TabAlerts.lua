@@ -23,20 +23,61 @@ local debugger	= _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
 -- Constants.
 -------------------------------------------------------------------------------
 local LISTEN_EVENTS = {
-	["BATTLEGROUND"]	= "CHAT_MSG_BATTLEGROUND",
-	["BATTLEGROUND_LEADER"]	= "CHAT_MSG_BATTLEGROUND_LEADER",
-	["EMOTE"]		= "CHAT_MSG_EMOTE",
-	["GUILD"]		= "CHAT_MSG_GUILD",
-	["GUILD_OFFICER"]	= "CHAT_MSG_OFFICER",
-	["GUILD_ACHIEVEMENT"]	= "CHAT_MSG_GUILD_ACHIEVEMENT",
-	["PARTY"]		= "CHAT_MSG_PARTY",
-	["PARTY_LEADER"]	= "CHAT_MSG_PARTY_LEADER",
-	["RAID"]		= "CHAT_MSG_RAID",
-	["RAID_LEADER"]		= "CHAT_MSG_RAID_LEADER",
-	["RAID_WARNING"]	= "CHAT_MSG_RAID_WARNING",
-	["SAY"]			= "CHAT_MSG_SAY",
-	["WHISPER"]		= "CHAT_MSG_WHISPER",
-	["YELL"]		= "CHAT_MSG_YELL",
+	-------------------------------------------------------------------------------
+	-- Player chat.
+	-------------------------------------------------------------------------------
+	["ACHIEVEMENT"]			= "CHAT_MSG_ACHIEVEMENT",
+	["BATTLEGROUND"]		= "CHAT_MSG_BATTLEGROUND",
+	["BATTLEGROUND_LEADER"]		= "CHAT_MSG_BATTLEGROUND_LEADER",
+	["EMOTE"]			= "CHAT_MSG_EMOTE",
+	["GUILD"]			= "CHAT_MSG_GUILD",
+	["GUILD_OFFICER"]		= "CHAT_MSG_OFFICER",
+	["GUILD_ACHIEVEMENT"]		= "CHAT_MSG_GUILD_ACHIEVEMENT",
+	["PARTY"]			= "CHAT_MSG_PARTY",
+	["PARTY_LEADER"]		= "CHAT_MSG_PARTY_LEADER",
+	["RAID"]			= "CHAT_MSG_RAID",
+	["RAID_LEADER"]			= "CHAT_MSG_RAID_LEADER",
+	["RAID_WARNING"]		= "CHAT_MSG_RAID_WARNING",
+	["SAY"]				= "CHAT_MSG_SAY",
+	["WHISPER"]			= "CHAT_MSG_WHISPER",
+	["YELL"]			= "CHAT_MSG_YELL",
+	-------------------------------------------------------------------------------
+	-- Creature messages.
+	-------------------------------------------------------------------------------
+	["MONSTER_BOSS_EMOTE"]		= "CHAT_MSG_RAID_BOSS_EMOTE",
+	["MONSTER_BOSS_WHISPER"]	= "CHAT_MSG_RAID_BOSS_WHISPER",
+	["MONSTER_EMOTE"]		= "CHAT_MSG_MONSTER_EMOTE",
+	["MONSTER_SAY"]			= "CHAT_MSG_MONSTER_SAY",
+	["MONSTER_WHISPER"]		= "CHAT_MSG_MONSTER_WHISPER",
+	["MONSTER_YELL"]		= "CHAT_MSG_MONSTER_YELL",
+	-------------------------------------------------------------------------------
+	-- Combat messages.
+	-------------------------------------------------------------------------------
+	["COMBAT_FACTION_CHANGE"]	= "CHAT_MSG_COMBAT_FACTION_CHANGE",
+	["COMBAT_HONOR_GAIN"]		= "CHAT_MSG_COMBAT_HONOR_GAIN",
+	["COMBAT_MISC_INFO"]		= "CHAT_MSG_COMBAT_MISC_INFO",
+	["COMBAT_XP_GAIN"]		= "CHAT_MSG_COMBAT_XP_GAIN",
+	["LOOT"]			= "CHAT_MSG_LOOT",
+	["MONEY"]			= "CHAT_MSG_MONEY",
+	["OPENING"]			= "CHAT_MSG_OPENING",
+	["PET_INFO"]			= "CHAT_MSG_PET_INFO",
+	["SKILL"]			= "CHAT_MSG_SKILL",
+	["TRADESKILLS"]			= "CHAT_MSG_TRADESKILLS",
+	-------------------------------------------------------------------------------
+	-- PvP messages.
+	-------------------------------------------------------------------------------
+	["BG_SYSTEM_ALLIANCE"]		= "CHAT_MSG_BG_SYSTEM_ALLIANCE",
+	["BG_SYSTEM_HORDE"]		= "CHAT_MSG_BG_SYSTEM_HORDE",
+	["BG_SYSTEM_NEUTRAL"]		= "CHAT_MSG_BG_SYSTEM_NEUTRAL",
+	-------------------------------------------------------------------------------
+	-- System messages.
+	-------------------------------------------------------------------------------
+	["AFK"]			= "CHAT_MSG_AFK",
+--	["CHANNEL"]		= "CHAT_MSG_",
+	["DND"]			= "CHAT_MSG_DND",
+--	["ERRORS"]		= "CHAT_MSG_RESTRICTED",
+	["IGNORED"]		= "CHAT_MSG_IGNORED",
+	["SYSTEM"]		= "CHAT_MSG_SYSTEM",
 }
 
 -------------------------------------------------------------------------------
