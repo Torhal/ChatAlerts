@@ -65,7 +65,7 @@ local function FlashTab(event, ...)
 			if LISTEN_EVENTS[type] == event and db.listen[type] then
 				Debug(event, frame:GetName(), message and ("\""..message.."\"") or "empty message", player or "no player",
 				      language or "no language")
-				FCF_FlashTab(frame)
+				_G.FCF_FlashTab(frame)
 				break
 			end
 		end
