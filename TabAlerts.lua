@@ -191,7 +191,22 @@ local function RefreshInactiveColor()
 			local text = tab:GetFontString()
 
 			text:SetTextColor(color_table.r, color_table.g, color_table.b)
-			return
+		end
+	end
+end
+
+local function RefreshAlertColor()
+	local color_table = db.font.alert
+
+	for index, frame in pairs(CHAT_FRAMES) do
+		local frame_name = "ChatFrame"..index
+		local frame = _G[frame_name]
+		local tab = _G[frame_name.."Tab"]
+		local flash = _G[frame_name.."TabFlash"]
+		local text = tab:GetFontString()
+
+		if flash:IsShown() then
+			text:SetTextColor(color_table.r, color_table.g, color_table.b)
 		end
 	end
 end
@@ -348,7 +363,7 @@ local message_options
 local function GetMessageOptions()
 	if not message_options then
 		message_options = {
-			order = 2,
+			order = 1,
 			name = _G.MESSAGE_TYPES,
 			type = "group",
 			childGroups = "tab",
@@ -463,25 +478,38 @@ local function GetColorOptions()
 							  RefreshInactiveColor()
 						  end,
 				},
-				-- alert_font_color = {
-				-- 	order	= 60,
-				-- 	type	= "color",
-				-- 	name	= L["Flashing"],
-				-- 	get	= function()
-				-- 			  local col = db.font.flashing
-				-- 			  return col.r, col.g, col.b
-				-- 		  end,
-				-- 	set	= function(info, r, g, b)
-				-- 		  end,
+				spacer2 = {
+					order	= 55,
+					type	= "description",
+					width	= "full",
+					name	= " ",
+				},
+				alert_font_color = {
+					order	= 60,
+					type	= "color",
+					name	= L["Alert"],
+					get	= function()
+							  local col = db.font.alert
+							  return col.r, col.g, col.b
+						  end,
+					set	= function(info, r, g, b)
+							  SetColorTable(db.font.alert, r, g, b)
+							  RefreshAlertColor()
+						  end,
 				
-				-- },
-				-- alert_font_default = {
-				-- 	order	= 70,
-				-- 	type	= "execute",
-				-- 	name	= _G.DEFAULT,
-				-- 	func	= function()
-				-- 		  end,
-				-- },
+				},
+				alert_font_default = {
+					order	= 70,
+					type	= "execute",
+					name	= _G.DEFAULT,
+					width	= "half",
+					func	= function()
+							  local col = DEFAULT_OPTIONS.font.alert
+
+							  SetColorTable(db.font.alert, col.r, col.g, col.b)
+							  RefreshAlertColor()
+						  end,
+				},
 				-- header2 = {
 				-- 	order	= 80,
 				-- 	type	= "header",
