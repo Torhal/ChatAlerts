@@ -16,6 +16,7 @@ local ADDON_NAME, namespace = ...
 local LibStub	= _G.LibStub
 local TabAlerts	= LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
 local LDB	= LibStub("LibDataBroker-1.1")
+local L		= LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local debugger	= _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
 
@@ -81,20 +82,28 @@ local LISTEN_EVENTS = {
 }
 
 local DEFAULT_OPTIONS = {
-	global = {
-		listen = {
-			["GUILD"]		= true,
-			["GUILD_OFFICER"]	= true,
-			["PARTY"]		= true,
-			["PARTY_LEADER"]	= true,
-			["WHISPER"]		= true,
+	listen = {
+		["GUILD"]		= true,
+		["GUILD_OFFICER"]	= true,
+		["PARTY"]		= true,
+		["PARTY_LEADER"]	= true,
+		["WHISPER"]		= true,
+	},
+	font = {
+		active = {
+			["r"]	= 1.0,
+			["g"]	= 0.82,
+			["b"]	= 0,
 		},
-		tab = {
-			font_color = {
-				["r"]	= 1.0,
-				["g"]	= 0.82,
-				["b"]	= 0,
-			}
+		inactive = {
+			["r"]	= 1.0,
+			["g"]	= 0.82,
+			["b"]	= 0,
+		},
+		flashing = {
+			["r"]	= 1.0,
+			["g"]	= 0.82,
+			["b"]	= 0,
 		},
 	}
 }
@@ -132,6 +141,56 @@ local function FlashTab(event, ...)
 	end
 end
 
+local function SetActiveColorTable(r, g, b)
+	local color_table = db.font.active
+
+	color_table.r = r
+	color_table.g = g
+	color_table.b = b
+end
+
+local function RefreshActiveColor()
+	local color_table = db.font.active
+
+	for index, frame in pairs(CHAT_FRAMES) do
+		local frame_name = "ChatFrame"..index
+		local frame = _G[frame_name]
+
+		if frame == SELECTED_DOCK_FRAME then
+			local tab = _G[frame_name.."Tab"]
+			local text = tab:GetFontString()
+
+			text:SetTextColor(color_table.r, color_table.g, color_table.b)
+			return
+		end
+	end
+end
+
+local function SetInactiveColorTable(r, g, b)
+	local color_table = db.font.inactive
+
+	color_table.r = r
+	color_table.g = g
+	color_table.b = b
+end
+
+local function RefreshInactiveColor()
+	local color_table = db.font.inactive
+
+	for index, frame in pairs(CHAT_FRAMES) do
+		local frame_name = "ChatFrame"..index
+		local frame = _G[frame_name]
+
+		if frame ~= SELECTED_DOCK_FRAME then
+			local tab = _G[frame_name.."Tab"]
+			local text = tab:GetFontString()
+
+			text:SetTextColor(color_table.r, color_table.g, color_table.b)
+			return
+		end
+	end
+end
+
 -------------------------------------------------------------------------------
 -- Initialization.
 -------------------------------------------------------------------------------
@@ -148,7 +207,11 @@ function _G.FCF_FlashTab(self)
 end
 
 function TabAlerts:OnInitialize()
-	local temp_db = LibStub("AceDB-3.0"):New(ADDON_NAME.."DB", DEFAULT_OPTIONS)
+	local defaults = {
+		global = DEFAULT_OPTIONS
+	}
+
+	local temp_db = LibStub("AceDB-3.0"):New(ADDON_NAME.."DB", defaults)
 	db = temp_db.global
 
 	self:SetupOptions()
@@ -236,9 +299,9 @@ local PVP_OPTIONS = {
 
 local OTHER_OPTIONS = {
 	"AFK",
---	"CHANNEL",
+	--	"CHANNEL",
 	"DND",
---	"ERRORS",
+	--	"ERRORS",
 	"IGNORED",
 	"SYSTEM",
 }
@@ -277,7 +340,7 @@ local message_options
 local function GetMessageOptions()
 	if not message_options then
 		message_options = {
-			order = 1,
+			order = 2,
 			name = _G.MESSAGE_TYPES,
 			type = "group",
 			childGroups = "tab",
@@ -322,72 +385,125 @@ local function GetMessageOptions()
 	end
 	return message_options
 end
+local color_options
+
+local function GetColorOptions()
+	if not color_options then
+		color_options = {
+			order	= 3,
+			name	= _G.COLOR_PICKER,
+			type	= "group",
+			args = {
+				header1 = {
+					order	= 10,
+					type	= "header",
+					name	= L["Font Colors"],
+				},
+				active_font_color = {
+					order	= 20,
+					type	= "color",
+					name	= L["Active"],
+					get	= function()
+							  local col = db.font.active
+							  return col.r, col.g, col.b
+						  end,
+					set	= function(info, r, g, b)
+							  SetActiveColorTable(r, g, b)
+							  RefreshActiveColor()
+						  end,
+				},
+				active_font_default = {
+					order	= 30,
+					type	= "execute",
+					name	= _G.DEFAULT,
+					width	= "half",
+					func	= function()
+							  local col = DEFAULT_OPTIONS.font.active
+
+							  SetActiveColorTable(col.r, col.g, col.b)
+							  RefreshActiveColor()
+						  end,
+				},
+				spacer1 = {
+					order	= 35,
+					type	= "description",
+					width	= "full",
+					name	= " ",
+				},
+				inactive_font_color = {
+					order	= 40,
+					type	= "color",
+					name	= L["Inactive"],
+					get	= function()
+							  local col = db.font.inactive
+							  return col.r, col.g, col.b
+						  end,
+					set	= function(info, r, g, b)
+							  SetInactiveColorTable(r, g, b)
+							  RefreshInactiveColor()
+						  end,
+				},
+				inactive_font_default = {
+					order	= 50,
+					type	= "execute",
+					name	= _G.DEFAULT,
+					width	= "half",
+					func	= function()
+							  local col = DEFAULT_OPTIONS.font.inactive
+
+							  SetInactiveColorTable(col.r, col.g, col.b)
+							  RefreshInactiveColor()
+						  end,
+				},
+				-- alert_font_color = {
+				-- 	order	= 60,
+				-- 	type	= "color",
+				-- 	name	= L["Flashing"],
+				-- 	get	= function()
+				-- 			  local col = db.font.flashing
+				-- 			  return col.r, col.g, col.b
+				-- 		  end,
+				-- 	set	= function(info, r, g, b)
+				-- 		  end,
+				
+				-- },
+				-- alert_font_default = {
+				-- 	order	= 70,
+				-- 	type	= "execute",
+				-- 	name	= _G.DEFAULT,
+				-- 	func	= function()
+				-- 		  end,
+				-- },
+				-- header2 = {
+				-- 	order	= 80,
+				-- 	type	= "header",
+				-- 	name	= L["Tab Colors"],
+				-- },
+				-- active_tab_color = {
+				-- },
+				-- inactive_tab_color = {
+				-- },
+				-- alert_tab_color = {
+				-- },
+			}
+		}
+	end
+	return color_options
+end
 local options
-local suboptions = {}
+--local suboptions = {}
 
 local function GetOptions()
 	if not options then
 		options = {
 			name = ADDON_NAME,
 			type = "group",
+			childGroups = "tab",
 			args = {
-				general = {
-					order	= 1,
-					type	= "group",
-					name	= _G.GENERAL,
-					args	= {	
-						header1 = {
-							order	= 10,
-							type	= "header",
-							name	= _G.GENERAL,
-						},
-						font_color = {
-							order	= 20,
-							type	= "color",
-							name	= "Font Color",
-							get	= function()
-									  local font = db.tab.font_color
-									  return font.r, font.g, font.b
-								  end,
-							set	= function(info, r, g, b)
-									  local font = db.tab.font_color
-
-									  font.r = r
-									  font.g = g
-									  font.b = b
-
-									  for index, frame in pairs(CHAT_FRAMES) do
-										  local tab = _G["ChatFrame"..index.."Tab"]
-										  local text = tab:GetFontString()
-
-										  text:SetTextColor(r, g, b)
-									  end
-								  end,
-						},
-						font_color_default = {
-							order	= 30,
-							type	= "execute",
-							name	= _G.DEFAULT,
-							func	= function()
-									  local font = DEFAULT_OPTIONS.global.tab.font_color
-
-									  for index, frame in pairs(CHAT_FRAMES) do
-										  local tab = _G["ChatFrame"..index.."Tab"]
-										  local text = tab:GetFontString()
-
-										  text:SetTextColor(font.r, font.g, font.b)
-									  end
-								  end,
-						},
-					},
-				},
 			}
 		}
-
-		-- Add the sub-options to the list.
-		for name, options_table in pairs(suboptions) do
-			options.args[name] = (type(options_table) == "function") and options_table() or options_table
-		end
+		options.args.color_options = GetColorOptions()
+		options.args.message_options = GetMessageOptions()
 	end
 	return options
 end
@@ -396,12 +512,13 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 function TabAlerts:SetupOptions()
 	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, GetOptions)
-	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME, nil, nil, "general")
+	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)--, nil, nil, "general")
 
-	self:RegisterSubOptions(_G.MESSAGE_TYPES, "message_types", GetMessageOptions)
+	-- self:RegisterSubOptions(_G.MESSAGE_TYPES, "message_types", GetMessageOptions)
+	-- self:RegisterSubOptions(_G.COLOR_PICKER, "color_picker", GetColorOptions)
 end
 
-function TabAlerts:RegisterSubOptions(name, section, options_table)
-	suboptions[section] = options_table
-	self.options_frame[section] = AceConfigDialog:AddToBlizOptions(ADDON_NAME, name, ADDON_NAME, section)
-end
+--function TabAlerts:RegisterSubOptions(name, section, options_table)
+-- 	suboptions[section] = options_table
+-- 	self.options_frame[section] = AceConfigDialog:AddToBlizOptions(ADDON_NAME, name, ADDON_NAME, section)
+-- end
