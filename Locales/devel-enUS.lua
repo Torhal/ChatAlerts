@@ -9,4 +9,5 @@ L["Active"]		= true
 L["Inactive"]		= true
 L["Alert"]		= true
 
-L["Tab Colors"]		= true
+L["Hide Tab Border"]	= true
+L["Hides the tab border, leaving only the text visible."]	= true
