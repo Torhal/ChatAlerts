@@ -202,6 +202,20 @@ local function RefreshAlertColor()
 	end
 end
 
+
+local function SetTabBorders(id_num)
+	local frame_ref = "ChatFrame"..id_num
+	local left = _G[frame_ref.."TabLeft"]
+	local middle = _G[frame_ref.."TabMiddle"]
+	local right = _G[frame_ref.."TabRight"]
+
+	local action = db.tab.hide_border and "Hide" or "Show"
+
+	left[action](left)
+	middle[action](middle)
+	right[action](right)
+end
+
 local function GetTabColors(id_num)
 	local r, g, b
 	local frame_name = "ChatFrame"..id_num
@@ -252,6 +266,8 @@ local function UpdateChatFrames()
 
 		tab:SetScript("OnEnter", Tab_OnEnter)
 		tab:SetScript("OnLeave", Tab_OnLeave)
+
+		SetTabBorders(index)
 
 		if db.tab.always_show then
 			if not TAB_DATA[index].dirty then
@@ -376,8 +392,6 @@ function TabAlerts:OnEnable()
 			Debug("OnEnable()", reg_event, "Registered")
 		end
 	end
-
-	hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
 end
 
 -------------------------------------------------------------------------------
@@ -644,7 +658,7 @@ local function GetMiscOptions()
 			name	= _G.MISCELLANEOUS,
 			type	= "group",
 			args = {
-				visibility = {
+				hide_border = {
 					order	= 10,
 					type	= "toggle",
 					name	= L["Hide Tab Border"],
@@ -655,17 +669,8 @@ local function GetMiscOptions()
 					set	= function(info, value)
 							  db.tab.hide_border = value
 
-							  local action = value and "Hide" or "Show"
-
 							  for index, frame in pairs(CHAT_FRAMES) do
-								  local frame_ref = "ChatFrame"..index
-								  local left = _G[frame_ref.."TabLeft"]
-								  local middle = _G[frame_ref.."TabMiddle"]
-								  local right = _G[frame_ref.."TabRight"]
-
-								  left[action](left)
-								  middle[action](middle)
-								  right[action](right)
+								  SetTabBorders(index)
 							  end
 						  end,
 				},
