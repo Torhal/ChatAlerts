@@ -105,7 +105,10 @@ local DEFAULT_OPTIONS = {
 			["g"]	= 0.82,
 			["b"]	= 0,
 		},
-	}
+	},
+	tab = {
+		hide_border	= false,
+	},
 }
 
 -------------------------------------------------------------------------------
@@ -490,6 +493,45 @@ local function GetColorOptions()
 	end
 	return color_options
 end
+local misc_options
+
+local function GetMiscOptions()
+	if not misc_options then
+		misc_options = {
+			order	= 3,
+			name	= _G.MISCELLANEOUS,
+			type	= "group",
+			args = {
+				visibility = {
+					order	= 10,
+					type	= "toggle",
+					name	= L["Hide Tab Border"],
+					desc	= L["Hides the tab border, leaving only the text visible."],
+					get	= function()
+							  return db.tab.hide_border
+						  end,
+					set	= function(info, value)
+							  db.tab.hide_border = value
+
+							  local action = value and "Hide" or "Show"
+
+							  for index, frame in pairs(CHAT_FRAMES) do
+								  local frame_ref = "ChatFrame"..index
+								  local left = _G[frame_ref.."TabLeft"]
+								  local middle = _G[frame_ref.."TabMiddle"]
+								  local right = _G[frame_ref.."TabRight"]
+
+								  left[action](left)
+								  middle[action](middle)
+								  right[action](right)
+							  end
+						  end,
+				},
+			},
+		}
+	end
+	return misc_options
+end
 local options
 --local suboptions = {}
 
@@ -504,6 +546,7 @@ local function GetOptions()
 		}
 		options.args.color_options = GetColorOptions()
 		options.args.message_options = GetMessageOptions()
+		options.args.misc_options = GetMiscOptions()
 	end
 	return options
 end
