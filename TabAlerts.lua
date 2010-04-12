@@ -80,6 +80,25 @@ local LISTEN_EVENTS = {
 	["SYSTEM"]		= "CHAT_MSG_SYSTEM",
 }
 
+local DEFAULT_OPTIONS = {
+	global = {
+		listen = {
+			["GUILD"]		= true,
+			["GUILD_OFFICER"]	= true,
+			["PARTY"]		= true,
+			["PARTY_LEADER"]	= true,
+			["WHISPER"]		= true,
+		},
+		tab = {
+			font_color = {
+				["r"]	= 1.0,
+				["g"]	= 0.82,
+				["b"]	= 0,
+			}
+		},
+	}
+}
+
 -------------------------------------------------------------------------------
 -- Variables
 -------------------------------------------------------------------------------
@@ -129,18 +148,7 @@ function _G.FCF_FlashTab(self)
 end
 
 function TabAlerts:OnInitialize()
-	local defaults = {
-		global = {
-			listen = {
-				["GUILD"]		= true,
-				["GUILD_OFFICER"]	= true,
-				["PARTY"]		= true,
-				["PARTY_LEADER"]	= true,
-				["WHISPER"]		= true,
-			}
-		}
-	}
-	local temp_db = LibStub("AceDB-3.0"):New(ADDON_NAME.."DB", defaults)
+	local temp_db = LibStub("AceDB-3.0"):New(ADDON_NAME.."DB", DEFAULT_OPTIONS)
 	db = temp_db.global
 
 	self:SetupOptions()
