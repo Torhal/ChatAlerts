@@ -251,6 +251,9 @@ function TabAlerts:OnEnable()
 			Debug("OnEnable()", reg_event, "Registered")
 		end
 	end
+
+	RefreshActiveColor()
+	RefreshInactiveColor()
 end
 
 -------------------------------------------------------------------------------
