@@ -144,18 +144,6 @@ local function FlashTab(event, ...)
 	end
 end
 
-local function Tab_OnEnter(self, motion)
-end
-
-local function Tab_OnLeave(self, motion)
-end
-
-local function Flash_OnShow(self)
-end
-
-local function Flash_OnHide(self)
-end
-
 local function SetColorTable(color_table, r, g, b)
 	color_table.r = r
 	color_table.g = g
@@ -211,6 +199,80 @@ local function RefreshAlertColor()
 	end
 end
 
+local function GetTabColors(id_num)
+	local r, g, b
+	local frame_name = "ChatFrame"..id_num
+	local flash = _G[frame_name.."TabFlash"]
+
+	if _G[frame_name] == SELECTED_CHAT_FRAME then
+		local color = db.font.active
+		r, g, b = color.r, color.g, color.b
+	elseif flash and flash:IsShown() then
+		local color = db.font.alert
+		r, g, b = color.r, color.g, color.b
+	else
+		local color = db.font.inactive
+		r, g, b = color.r, color.g, color.b
+	end
+	return r, g, b
+end
+
+local SetFontStates
+do
+	local base_font = GameFontNormalSmall
+
+	function SetFontStates(self, r, g, b, flags)
+		-- The "self" parameter may be the tab's flash texture instead of the tab itself.
+		local text = self.GetFontString and self:GetFontString() or self:GetParent():GetFontString()
+		local font, font_size = base_font:GetFont()
+
+		text:SetFont(font, font_size, flags)
+
+		if r and g and b then
+			text:SetTextColor(r, g, b)
+		end
+	end
+end	-- do-block
+
+local function UpdateChatFrames()
+	for index = 1, _G.NUM_CHAT_WINDOWS do
+		local frame_name = "ChatFrame"..index
+		local chat_frame = _G[frame_name]
+		local tab = _G[frame_name.."Tab"]
+		local tab_flash = _G[frame_name.."TabFlash"]
+
+		CHAT_FRAMES[index] = chat_frame
+
+		tab:SetScript("OnEnter", Tab_OnEnter)
+		tab:SetScript("OnLeave", Tab_OnLeave)
+
+		local r, g, b = GetTabColors(index)
+		SetFontStates(tab, r, g, b)
+
+		tab_flash:SetScript("OnShow", Flash_OnShow)
+		tab_flash:SetScript("OnHide", Flash_OnHide)
+	end
+end
+
+function Tab_OnEnter(self, motion)
+	local r, g, b = GetTabColors(self:GetID())
+	SetFontStates(self, r, g, b, "OUTLINE")
+end
+
+function Tab_OnLeave(self, motion)
+	local r, g, b = GetTabColors(self:GetID())
+	SetFontStates(self, r, g, b)
+end
+
+function Flash_OnShow(self)
+	local color = db.font.alert
+	SetFontStates(self, color.r, color.g, color.b, "OUTLINE")
+end
+
+function Flash_OnHide(self)
+	UpdateChatFrames()
+end
+
 -------------------------------------------------------------------------------
 -- Initialization.
 -------------------------------------------------------------------------------
@@ -238,9 +300,7 @@ function TabAlerts:OnInitialize()
 end
 
 function TabAlerts:OnEnable()
-	for i = 1, _G.NUM_CHAT_WINDOWS do
-		CHAT_FRAMES[i] = _G["ChatFrame"..i]
-	end
+	UpdateChatFrames()
 
 	data_obj = LDB:NewDataObject(ADDON_NAME, {
 		type	= "launcher",
@@ -267,8 +327,7 @@ function TabAlerts:OnEnable()
 		end
 	end
 
-	RefreshActiveColor()
-	RefreshInactiveColor()
+	hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
 end
 
 -------------------------------------------------------------------------------
