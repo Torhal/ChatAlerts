@@ -11,3 +11,6 @@ L["Alert"]		= true
 
 L["Hide Tab Border"]	= true
 L["Hides the tab border, leaving only the text visible."]	= true
+
+L["Always Show"]	= true
+L["Toggles between always showing the tab or only showing it on mouse-over."]	= true

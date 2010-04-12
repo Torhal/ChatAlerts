@@ -108,6 +108,7 @@ local DEFAULT_OPTIONS = {
 	},
 	tab = {
 		hide_border	= false,
+		always_show	= false,
 	},
 }
 
@@ -117,6 +118,8 @@ local DEFAULT_OPTIONS = {
 local data_obj
 local db
 local CHAT_FRAMES = {}
+local TAB_DATA = {}
+local orig_FCF_ChatTabFadeFinished
 
 -------------------------------------------------------------------------------
 -- Local functions
@@ -234,6 +237,9 @@ do
 	end
 end	-- do-block
 
+local function DoNothing ()
+end
+
 local function UpdateChatFrames()
 	for index = 1, _G.NUM_CHAT_WINDOWS do
 		local frame_name = "ChatFrame"..index
@@ -242,10 +248,47 @@ local function UpdateChatFrames()
 		local tab_flash = _G[frame_name.."TabFlash"]
 
 		CHAT_FRAMES[index] = chat_frame
+		TAB_DATA[index] = TAB_DATA[index] or {}
 
 		tab:SetScript("OnEnter", Tab_OnEnter)
 		tab:SetScript("OnLeave", Tab_OnLeave)
 
+		if db.tab.always_show then
+			if not TAB_DATA[index].dirty then
+				TAB_DATA[index].Hide = tab.Hide
+				TAB_DATA[index].SetAlpha = tab.SetAlpha
+
+				TAB_DATA[index].dirty = true
+
+				if chat_frame.isDocked then
+					tab:Show()
+				else
+					print(string.format("%s is not docked.", frame_name))
+				end
+				tab.Hide = DoNothing
+				tab.SetAlpha = DoNothing
+				tab:SetHighlightTexture(nil)
+			end
+
+			if not orig_FCF_ChatTabFadeFinished then
+				orig_FCF_ChatTabFadeFinished = _G.FCF_ChatTabFadeFinished
+				_G.FCF_ChatTabFadeFinished = DoNothing()
+			end
+		else
+			if TAB_DATA[index].dirty then
+				tab.Hide = TAB_DATA[index].Hide
+				tab.SetAlpha = TAB_DATA[index].SetAlpha
+				tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+
+
+				TAB_DATA[index].dirty = nil
+			end
+
+			if orig_FCF_ChatTabFadeFinished then
+				_G.FCF_ChatTabFadeFinished = orig_FCF_ChatTabFadeFinished
+				orig_FCF_ChatTabFadeFinished = nil
+			end
+		end
 		local r, g, b = GetTabColors(index)
 		SetFontStates(tab, r, g, b)
 
@@ -301,6 +344,13 @@ end
 
 function TabAlerts:OnEnable()
 	UpdateChatFrames()
+	hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
+	hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
+	hooksecurefunc("FCF_Close",
+		       function(self, fallback)
+			       local frame = fallback or self
+			       UIParent.Hide(_G[frame:GetName().."Tab"])
+		       end)
 
 	data_obj = LDB:NewDataObject(ADDON_NAME, {
 		type	= "launcher",
@@ -619,6 +669,19 @@ local function GetMiscOptions()
 							  end
 						  end,
 				},
+				always_show = {
+					order	= 20,
+					type	= "toggle",
+					name	= L["Always Show"],
+					desc	= L["Toggles between always showing the tab or only showing it on mouse-over."],
+					get	= function()
+							  return db.tab.always_show
+						  end,
+					set	= function(info, value)
+							  db.tab.always_show = value
+							  UpdateChatFrames()
+						  end,
+				}
 			},
 		}
 	end
