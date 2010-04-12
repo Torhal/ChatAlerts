@@ -188,8 +188,6 @@ end
 -------------------------------------------------------------------------------
 -- Configuration.
 -------------------------------------------------------------------------------
-local options
-
 local CHAT_OPTIONS = {
 	"ACHIEVEMENT",
 	"BATTLEGROUND",
@@ -245,7 +243,7 @@ local OTHER_OPTIONS = {
 	"SYSTEM",
 }
 
-local function BuildOptionArgs(arg_table, options)
+local function BuildMessageOptionArgs(arg_table, options)
 	for index, section in ipairs(options) do
 		local low_section = section:lower()
 
@@ -274,11 +272,13 @@ local function BuildOptionArgs(arg_table, options)
 		}
 	end
 end
+local message_options
 
-local function GetOptions()
-	if not options then
-		options = {
-			name = ADDON_NAME,
+local function GetMessageOptions()
+	if not message_options then
+		message_options = {
+			order = 1,
+			name = _G.MESSAGE_TYPES,
 			type = "group",
 			childGroups = "tab",
 			args = {
@@ -314,16 +314,94 @@ local function GetOptions()
 				},
 			}
 		}
-		BuildOptionArgs(options.args.chat.args, CHAT_OPTIONS)
-		BuildOptionArgs(options.args.creature.args, CREATURE_OPTIONS)
-		BuildOptionArgs(options.args.combat.args, COMBAT_OPTIONS)
-		BuildOptionArgs(options.args.pvp.args, PVP_OPTIONS)
-		BuildOptionArgs(options.args.other.args, OTHER_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.chat.args, CHAT_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.creature.args, CREATURE_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.combat.args, COMBAT_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.pvp.args, PVP_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.other.args, OTHER_OPTIONS)
+	end
+	return message_options
+end
+local options
+local suboptions = {}
+
+local function GetOptions()
+	if not options then
+		options = {
+			name = ADDON_NAME,
+			type = "group",
+			args = {
+				general = {
+					order	= 1,
+					type	= "group",
+					name	= _G.GENERAL,
+					args	= {	
+						header1 = {
+							order	= 10,
+							type	= "header",
+							name	= _G.GENERAL,
+						},
+						font_color = {
+							order	= 20,
+							type	= "color",
+							name	= "Font Color",
+							get	= function()
+									  local font = db.tab.font_color
+									  return font.r, font.g, font.b
+								  end,
+							set	= function(info, r, g, b)
+									  local font = db.tab.font_color
+
+									  font.r = r
+									  font.g = g
+									  font.b = b
+
+									  for index, frame in pairs(CHAT_FRAMES) do
+										  local tab = _G["ChatFrame"..index.."Tab"]
+										  local text = tab:GetFontString()
+
+										  text:SetTextColor(r, g, b)
+									  end
+								  end,
+						},
+						font_color_default = {
+							order	= 30,
+							type	= "execute",
+							name	= _G.DEFAULT,
+							func	= function()
+									  local font = DEFAULT_OPTIONS.global.tab.font_color
+
+									  for index, frame in pairs(CHAT_FRAMES) do
+										  local tab = _G["ChatFrame"..index.."Tab"]
+										  local text = tab:GetFontString()
+
+										  text:SetTextColor(font.r, font.g, font.b)
+									  end
+								  end,
+						},
+					},
+				},
+			}
+		}
+
+		-- Add the sub-options to the list.
+		for name, options_table in pairs(suboptions) do
+			options.args[name] = (type(options_table) == "function") and options_table() or options_table
+		end
 	end
 	return options
 end
+local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 function TabAlerts:SetupOptions()
-	LibStub("AceConfig-3.0"):RegisterOptionsTable(ADDON_NAME, GetOptions())
-	self.options_frame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
+	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, GetOptions)
+	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME, nil, nil, "general")
+
+	self:RegisterSubOptions(_G.MESSAGE_TYPES, "message_types", GetMessageOptions)
+end
+
+function TabAlerts:RegisterSubOptions(name, section, options_table)
+	suboptions[section] = options_table
+	self.options_frame[section] = AceConfigDialog:AddToBlizOptions(ADDON_NAME, name, ADDON_NAME, section)
 end
