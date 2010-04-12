@@ -100,7 +100,7 @@ local DEFAULT_OPTIONS = {
 			["g"]	= 0.82,
 			["b"]	= 0,
 		},
-		flashing = {
+		alert = {
 			["r"]	= 1.0,
 			["g"]	= 0.82,
 			["b"]	= 0,
@@ -144,9 +144,19 @@ local function FlashTab(event, ...)
 	end
 end
 
-local function SetActiveColorTable(r, g, b)
-	local color_table = db.font.active
+local function Tab_OnEnter(self, motion)
+end
 
+local function Tab_OnLeave(self, motion)
+end
+
+local function Flash_OnShow(self)
+end
+
+local function Flash_OnHide(self)
+end
+
+local function SetColorTable(color_table, r, g, b)
 	color_table.r = r
 	color_table.g = g
 	color_table.b = b
@@ -167,14 +177,6 @@ local function RefreshActiveColor()
 			return
 		end
 	end
-end
-
-local function SetInactiveColorTable(r, g, b)
-	local color_table = db.font.inactive
-
-	color_table.r = r
-	color_table.g = g
-	color_table.b = b
 end
 
 local function RefreshInactiveColor()
@@ -393,7 +395,7 @@ local color_options
 local function GetColorOptions()
 	if not color_options then
 		color_options = {
-			order	= 3,
+			order	= 2,
 			name	= _G.COLOR_PICKER,
 			type	= "group",
 			args = {
@@ -411,7 +413,7 @@ local function GetColorOptions()
 							  return col.r, col.g, col.b
 						  end,
 					set	= function(info, r, g, b)
-							  SetActiveColorTable(r, g, b)
+							  SetColorTable(db.font.active, r, g, b)
 							  RefreshActiveColor()
 						  end,
 				},
@@ -423,7 +425,7 @@ local function GetColorOptions()
 					func	= function()
 							  local col = DEFAULT_OPTIONS.font.active
 
-							  SetActiveColorTable(col.r, col.g, col.b)
+							  SetColorTable(db.font.active, col.r, col.g, col.b)
 							  RefreshActiveColor()
 						  end,
 				},
@@ -442,7 +444,7 @@ local function GetColorOptions()
 							  return col.r, col.g, col.b
 						  end,
 					set	= function(info, r, g, b)
-							  SetInactiveColorTable(r, g, b)
+							  SetColorTable(db.font.inactive, r, g, b)
 							  RefreshInactiveColor()
 						  end,
 				},
@@ -454,7 +456,7 @@ local function GetColorOptions()
 					func	= function()
 							  local col = DEFAULT_OPTIONS.font.inactive
 
-							  SetInactiveColorTable(col.r, col.g, col.b)
+							  SetColorTable(db.font.inactive, col.r, col.g, col.b)
 							  RefreshInactiveColor()
 						  end,
 				},
