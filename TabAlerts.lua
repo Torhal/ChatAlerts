@@ -116,6 +116,18 @@ end
 -------------------------------------------------------------------------------
 -- Initialization.
 -------------------------------------------------------------------------------
+-- Override the default flash behavior of the tabs so they don't time out until accessed instead of fading after 60 seconds.
+-- Yanked straight out of the default UI's code and modified.
+function _G.FCF_FlashTab(self)
+	local tabFlash = _G[self:GetName().."TabFlash"];
+
+	if not self.isDocked or self == SELECTED_DOCK_FRAME or UIFrameIsFlashing(tabFlash) then
+		return
+	end
+	tabFlash:Show()
+	UIFrameFlash(tabFlash, 0.25, 0.25, -1, nil, 0.5, 0.5);
+end
+
 function TabAlerts:OnInitialize()
 	local defaults = {
 		global = {
