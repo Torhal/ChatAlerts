@@ -15,4 +15,5 @@
 embeds.xml
 #@end-no-lib-strip@
 
+locales.xml
 TabAlerts.lua
