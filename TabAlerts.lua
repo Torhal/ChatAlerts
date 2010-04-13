@@ -128,6 +128,7 @@ local DEFAULT_OPTIONS = {
 		hide_border	= false,
 		always_show	= false,
 		fade_inactive	= true,
+		highlight	= true,
 	},
 	alert_flash = {
 		disable	= false,
@@ -285,6 +286,17 @@ local function UpdateChatFrames()
 			end
 		end
 
+		if not db.tab.highlight then
+			tab:SetHighlightTexture(nil)
+		else
+			tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+
+			local texture = tab:GetHighlightTexture()
+
+			texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
+			texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
+		end
+
 		if db.tab.always_show then
 			if not TAB_DATA[index].Hide then
 				if chat_frame.isDocked or chat_frame:IsShown() then
@@ -292,8 +304,6 @@ local function UpdateChatFrames()
 				end
 				TAB_DATA[index].Hide = tab.Hide
 				tab.Hide = DoNothing
-
-				tab:SetHighlightTexture(nil)
 			end
 
 			if not orig_FCF_ChatTabFadeFinished then
@@ -302,13 +312,6 @@ local function UpdateChatFrames()
 			end
 		else
 			if TAB_DATA[index].Hide then
-				tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
-
-				local texture = tab:GetHighlightTexture()
-
-				texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
-				texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
-
 				tab.Hide = TAB_DATA[index].Hide
 				TAB_DATA[index].Hide = nil
 
@@ -710,8 +713,25 @@ local function GetMiscOptions()
 							  end
 						  end,
 				},
-				tab_defaults = {
+				highlight = {
 					order	= 40,
+					type	= "toggle",
+					name	= "Highlight",
+					get	= function()
+							  return db.tab.highlight
+						  end,
+					set	= function(info, value)
+							  db.tab.highlight = value
+							  UpdateChatFrames()
+						  end,
+				},
+				spacer_1 = {
+					order	= 41,
+					type	= "description",
+					name	= "",
+				},
+				tab_defaults = {
+					order	= 50,
 					type	= "execute",
 					name	= _G.DEFAULT,
 					width	= "half",
@@ -723,12 +743,12 @@ local function GetMiscOptions()
 						  end,
 				},
 				header_2 = {
-					order	= 41,
+					order	= 51,
 					type	= "header",
 					name	= L["Alert Options"],
 				},
 				flash_texture = {
-					order	= 50,
+					order	= 60,
 					type	= "select",
 					name	= _G.APPEARANCE_LABEL,
 					desc	= L["Changes the appearance of the pulsing alert flash."],
@@ -743,7 +763,7 @@ local function GetMiscOptions()
 					values	= FLASH_DESCRIPTIONS,
 				},
 				flash_color = {
-					order	= 60,
+					order	= 70,
 					type	= "color",
 					name	= _G.COLOR,
 					disabled = IsFlashDisabled,
@@ -757,7 +777,7 @@ local function GetMiscOptions()
 						  end,
 				},
 				disable_flash = {
-					order	= 70,
+					order	= 80,
 					type	= "toggle",
 					name	= _G.DISABLE,
 					desc	= L["Disables the pulsing alert flash."],
@@ -769,8 +789,13 @@ local function GetMiscOptions()
 							  UpdateChatFrames()
 						  end,
 				},
+				spacer_2 = {
+					order	= 81,
+					type	= "description",
+					name	= "",
+				},
 				flash_defaults = {
-					order	= 80,
+					order	= 90,
 					type	= "execute",
 					name	= _G.DEFAULT,
 					width	= "half",
