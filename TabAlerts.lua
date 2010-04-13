@@ -758,13 +758,25 @@ local function GetMiscOptions()
 							  end
 						  end,
 				},
+				tab_defaults = {
+					order	= 40,
+					type	= "execute",
+					name	= _G.DEFAULT,
+					width	= "half",
+					func	= function()
+							  for option, value in pairs(DEFAULT_OPTIONS.tab) do
+								  db.tab[option] = value
+							  end
+							  UpdateChatFrames()
+						  end,
+				},
 				header_2 = {
-					order	= 31,
+					order	= 41,
 					type	= "header",
 					name	= L["Alert Options"],
 				},
 				flash_texture = {
-					order	= 40,
+					order	= 50,
 					type	= "select",
 					name	= _G.APPEARANCE_LABEL,
 					desc	= L["Changes the appearance of the pulsing alert flash."],
@@ -779,7 +791,7 @@ local function GetMiscOptions()
 					values	= FLASH_DESCRIPTIONS,
 				},
 				flash_color = {
-					order	= 50,
+					order	= 60,
 					type	= "color",
 					name	= _G.COLOR,
 					disabled = IsFlashDisabled,
@@ -792,8 +804,21 @@ local function GetMiscOptions()
 							  UpdateChatFrames()
 						  end,
 				},
+				disable_flash = {
+					order	= 70,
+					type	= "toggle",
+					name	= _G.DISABLE,
+					desc	= L["Disables the pulsing alert flash."],
+					get	= function()
+							  return db.alert_flash.disable
+						  end,
+					set	= function(info, value)
+							  db.alert_flash.disable = value
+							  UpdateChatFrames()
+						  end,
+				},
 				flash_defaults = {
-					order	= 60,
+					order	= 80,
 					type	= "execute",
 					name	= _G.DEFAULT,
 					width	= "half",
@@ -809,19 +834,6 @@ local function GetMiscOptions()
 							  for color, value in pairs(DEFAULT_OPTIONS.alert_flash.colors) do
 								  db.alert_flash.colors[color] = value
 							  end
-							  UpdateChatFrames()
-						  end,
-				},
-				disable_flash = {
-					order	= 70,
-					type	= "toggle",
-					name	= _G.DISABLE,
-					desc	= L["Disables the pulsing alert flash."],
-					get	= function()
-							  return db.alert_flash.disable
-						  end,
-					set	= function(info, value)
-							  db.alert_flash.disable = value
 							  UpdateChatFrames()
 						  end,
 				},
