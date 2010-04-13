@@ -181,56 +181,6 @@ local function SetColorTable(color_table, r, g, b)
 	color_table.b = b
 end
 
-local function RefreshActiveColor()
-	local color_table = db.font.active
-
-	for index, frame in pairs(CHAT_FRAMES) do
-		local frame_name = "ChatFrame"..index
-		local frame = _G[frame_name]
-
-		if frame == SELECTED_DOCK_FRAME then
-			local tab = _G[frame_name.."Tab"]
-			local text = tab:GetFontString()
-
-			text:SetTextColor(color_table.r, color_table.g, color_table.b)
-			return
-		end
-	end
-end
-
-local function RefreshInactiveColor()
-	local color_table = db.font.inactive
-
-	for index, frame in pairs(CHAT_FRAMES) do
-		local frame_name = "ChatFrame"..index
-		local frame = _G[frame_name]
-
-		if frame ~= SELECTED_DOCK_FRAME then
-			local tab = _G[frame_name.."Tab"]
-			local text = tab:GetFontString()
-
-			text:SetTextColor(color_table.r, color_table.g, color_table.b)
-		end
-	end
-end
-
-local function RefreshAlertColor()
-	local color_table = db.font.alert
-
-	for index, frame in pairs(CHAT_FRAMES) do
-		local frame_name = "ChatFrame"..index
-		local frame = _G[frame_name]
-		local tab = _G[frame_name.."Tab"]
-		local flash = _G[frame_name.."TabFlash"]
-		local text = tab:GetFontString()
-
-		if flash:IsShown() then
-			text:SetTextColor(color_table.r, color_table.g, color_table.b)
-		end
-	end
-end
-
-
 local function SetTabBorders(id_num)
 	local frame_ref = "ChatFrame"..id_num
 	local left = _G[frame_ref.."TabLeft"]
@@ -617,7 +567,7 @@ local function GetColorOptions()
 						  end,
 					set	= function(info, r, g, b)
 							  SetColorTable(db.font.active, r, g, b)
-							  RefreshActiveColor()
+							  UpdateChatFrames()
 						  end,
 				},
 				active_font_default = {
@@ -629,7 +579,7 @@ local function GetColorOptions()
 							  local col = DEFAULT_OPTIONS.font.active
 
 							  SetColorTable(db.font.active, col.r, col.g, col.b)
-							  RefreshActiveColor()
+							  UpdateChatFrames()
 						  end,
 				},
 				spacer1 = {
@@ -648,7 +598,7 @@ local function GetColorOptions()
 						  end,
 					set	= function(info, r, g, b)
 							  SetColorTable(db.font.inactive, r, g, b)
-							  RefreshInactiveColor()
+							  UpdateChatFrames()
 						  end,
 				},
 				inactive_font_default = {
@@ -660,7 +610,7 @@ local function GetColorOptions()
 							  local col = DEFAULT_OPTIONS.font.inactive
 
 							  SetColorTable(db.font.inactive, col.r, col.g, col.b)
-							  RefreshInactiveColor()
+							  UpdateChatFrames()
 						  end,
 				},
 				spacer2 = {
@@ -679,7 +629,7 @@ local function GetColorOptions()
 						  end,
 					set	= function(info, r, g, b)
 							  SetColorTable(db.font.alert, r, g, b)
-							  RefreshAlertColor()
+							  UpdateChatFrames()
 						  end,
 				
 				},
@@ -692,7 +642,7 @@ local function GetColorOptions()
 							  local col = DEFAULT_OPTIONS.font.alert
 
 							  SetColorTable(db.font.alert, col.r, col.g, col.b)
-							  RefreshAlertColor()
+							  UpdateChatFrames()
 						  end,
 				},
 			}
