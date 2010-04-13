@@ -267,6 +267,12 @@ local function UpdateChatFrames()
 		tab:SetScript("OnEnter", Tab_OnEnter)
 		tab:SetScript("OnLeave", Tab_OnLeave)
 
+		local r, g, b = GetTabColors(index)
+		SetFontStates(tab, r, g, b)
+
+		tab_flash:SetScript("OnShow", Flash_OnShow)
+		tab_flash:SetScript("OnHide", Flash_OnHide)
+
 		SetTabBorders(index)
 
 		if db.tab.always_show then
@@ -277,9 +283,8 @@ local function UpdateChatFrames()
 				TAB_DATA[index].dirty = true
 
 				if chat_frame.isDocked then
+					tab:SetAlpha(1)
 					tab:Show()
-				else
-					print(string.format("%s is not docked.", frame_name))
 				end
 				tab.Hide = DoNothing
 				tab.SetAlpha = DoNothing
@@ -294,8 +299,15 @@ local function UpdateChatFrames()
 			if TAB_DATA[index].dirty then
 				tab.Hide = TAB_DATA[index].Hide
 				tab.SetAlpha = TAB_DATA[index].SetAlpha
+
+				tab:SetAlpha(0)
+				tab:Hide()
 				tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
 
+				local texture = tab:GetHighlightTexture()
+
+				texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
+				texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
 
 				TAB_DATA[index].dirty = nil
 			end
@@ -305,11 +317,6 @@ local function UpdateChatFrames()
 				orig_FCF_ChatTabFadeFinished = nil
 			end
 		end
-		local r, g, b = GetTabColors(index)
-		SetFontStates(tab, r, g, b)
-
-		tab_flash:SetScript("OnShow", Flash_OnShow)
-		tab_flash:SetScript("OnHide", Flash_OnHide)
 	end
 end
 
