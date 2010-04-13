@@ -81,6 +81,24 @@ local LISTEN_EVENTS = {
 	["SYSTEM"]		= "CHAT_MSG_SYSTEM",
 }
 
+local FLASH_TEXTURES = {
+	"Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight",
+	"Interface\\CHATFRAME\\ChatFrameTab",
+	"Interface\\GMChatFrame\\UI-GMStatusFrame-Pulse",
+}
+
+local FLASH_DESCRIPTIONS = {
+	_G.DEFAULT,
+	L["Outline"],
+	L["Bold Outline"],
+}
+
+local FLASH_OFFSET_Y = {
+	-5,
+	0,
+	-5,
+}
+
 local DEFAULT_OPTIONS = {
 	listen = {
 		["GUILD"]		= true,
@@ -110,6 +128,15 @@ local DEFAULT_OPTIONS = {
 		hide_border	= false,
 		always_show	= false,
 		fade_inactive	= true,
+	},
+	alert_flash = {
+		disable	= false,
+		texture	= 1,
+		colors	= {
+			["r"]	= 0.32,
+			["g"]	= 0.73,
+			["b"]	= 0.84,
+		}
 	},
 }
 
@@ -274,6 +301,21 @@ local function UpdateChatFrames()
 		tab_flash:SetScript("OnShow", Flash_OnShow)
 		tab_flash:SetScript("OnHide", Flash_OnHide)
 
+		if db.tab.disable_flash then
+			tab_flash:GetRegions():SetTexture(nil)
+		else
+			local color = db.alert_flash.colors
+			local tex_id =  db.alert_flash.texture
+			local texture = tab_flash:GetRegions()
+			local y_offset = FLASH_OFFSET_Y[tex_id]
+
+			texture:SetTexture(FLASH_TEXTURES[tex_id])
+			texture:SetVertexColor(color.r, color.g, color.b)
+
+			texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
+			texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
+		end
+
 		SetTabBorders(index)
 
 		-- Store and unset the tab's SetAlpha method - it's used by the default UI in a way which breaks the
@@ -295,7 +337,7 @@ local function UpdateChatFrames()
 
 		if db.tab.always_show then
 			if not TAB_DATA[index].Hide then
-				if chat_frame:IsShown() then
+				if chat_frame.isDocked or chat_frame:IsShown() then
 					tab:Show()
 				end
 				TAB_DATA[index].Hide = tab.Hide
@@ -651,23 +693,16 @@ local function GetColorOptions()
 							  RefreshAlertColor()
 						  end,
 				},
-				-- header2 = {
-				-- 	order	= 80,
-				-- 	type	= "header",
-				-- 	name	= L["Tab Colors"],
-				-- },
-				-- active_tab_color = {
-				-- },
-				-- inactive_tab_color = {
-				-- },
-				-- alert_tab_color = {
-				-- },
 			}
 		}
 	end
 	return color_options
 end
 local misc_options
+
+local function IsFlashDisabled()
+	return db.alert_flash.disable
+end
 
 local function GetMiscOptions()
 	if not misc_options then
@@ -676,6 +711,11 @@ local function GetMiscOptions()
 			name	= _G.MISCELLANEOUS,
 			type	= "group",
 			args = {
+				header_1 = {
+					order	= 1,
+					type	= "header",
+					name	= L["Tab Options"],
+				},
 				always_show = {
 					order	= 10,
 					type	= "toggle",
@@ -693,7 +733,7 @@ local function GetMiscOptions()
 					order	= 20,
 					type	= "toggle",
 					name	= L["Fade Inactive"],
-					desc	= L["The name of inactive tabs will be faded."],
+					desc	= L["Fades the name of inactive tabs."],
 					get	= function()
 							  return db.tab.fade_inactive
 						  end,
@@ -705,7 +745,7 @@ local function GetMiscOptions()
 				hide_border = {
 					order	= 30,
 					type	= "toggle",
-					name	= L["Hide Tab Border"],
+					name	= L["Hide Border"],
 					desc	= L["Hides the tab border, leaving only the text visible."],
 					get	= function()
 							  return db.tab.hide_border
@@ -716,6 +756,73 @@ local function GetMiscOptions()
 							  for index, frame in pairs(CHAT_FRAMES) do
 								  SetTabBorders(index)
 							  end
+						  end,
+				},
+				header_2 = {
+					order	= 31,
+					type	= "header",
+					name	= L["Alert Options"],
+				},
+				flash_texture = {
+					order	= 40,
+					type	= "select",
+					name	= _G.APPEARANCE_LABEL,
+					desc	= L["Changes the appearance of the pulsing alert flash."],
+					disabled = IsFlashDisabled,
+					get	= function()
+							  return db.alert_flash.texture
+						  end,
+					set	= function(info, value)
+							  db.alert_flash.texture = value
+							  UpdateChatFrames()
+						  end,
+					values	= FLASH_DESCRIPTIONS,
+				},
+				flash_color = {
+					order	= 50,
+					type	= "color",
+					name	= _G.COLOR,
+					disabled = IsFlashDisabled,
+					get	= function()
+							  local col = db.alert_flash.colors
+							  return col.r, col.g, col.b
+						  end,
+					set	= function(info, r, g, b)
+							  SetColorTable(db.alert_flash.colors, r, g, b)
+							  UpdateChatFrames()
+						  end,
+				},
+				flash_defaults = {
+					order	= 60,
+					type	= "execute",
+					name	= _G.DEFAULT,
+					width	= "half",
+					func	= function()
+							  local col = DEFAULT_OPTIONS.alert_flash.colors
+
+							  SetColorTable(db.alert_flash.colors, r, g, b)
+
+							  for option, value in pairs(DEFAULT_OPTIONS.alert_flash) do
+								  db.alert_flash[option] = value
+							  end
+
+							  for color, value in pairs(DEFAULT_OPTIONS.alert_flash.colors) do
+								  db.alert_flash.colors[color] = value
+							  end
+							  UpdateChatFrames()
+						  end,
+				},
+				disable_flash = {
+					order	= 70,
+					type	= "toggle",
+					name	= _G.DISABLE,
+					desc	= L["Disables the pulsing alert flash."],
+					get	= function()
+							  return db.alert_flash.disable
+						  end,
+					set	= function(info, value)
+							  db.alert_flash.disable = value
+							  UpdateChatFrames()
 						  end,
 				},
 			},
