@@ -362,7 +362,9 @@ local function UpdateChatFrames()
 				tab.Hide = TAB_DATA[index].Hide
 				TAB_DATA[index].Hide = nil
 
-				tab:Hide()
+				if not tab_flash:IsShown() then
+					tab:Hide()
+				end
 			end
 
 			if orig_FCF_ChatTabFadeFinished then
