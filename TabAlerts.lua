@@ -109,6 +109,7 @@ local DEFAULT_OPTIONS = {
 	tab = {
 		hide_border	= false,
 		always_show	= false,
+		fade_inactive	= true,
 	},
 }
 
@@ -275,19 +276,31 @@ local function UpdateChatFrames()
 
 		SetTabBorders(index)
 
+		-- Store and unset the tab's SetAlpha method - it's used by the default UI in a way which breaks the
+		-- AddOn's options, so we'll handle it manually.
+		if not TAB_DATA[index].SetAlpha then
+			TAB_DATA[index].SetAlpha = tab.SetAlpha
+			tab.SetAlpha = DoNothing
+		end
+
+		if not db.tab.fade_inactive then
+			TAB_DATA[index].SetAlpha(tab, 1)
+		else
+			if chat_frame ~= SELECTED_DOCK_FRAME then
+				TAB_DATA[index].SetAlpha(tab, 0.5)
+			else
+				TAB_DATA[index].SetAlpha(tab, 1)
+			end
+		end
+
 		if db.tab.always_show then
-			if not TAB_DATA[index].dirty then
-				TAB_DATA[index].Hide = tab.Hide
-				TAB_DATA[index].SetAlpha = tab.SetAlpha
-
-				TAB_DATA[index].dirty = true
-
-				if chat_frame.isDocked then
-					tab:SetAlpha(1)
+			if not TAB_DATA[index].Hide then
+				if chat_frame:IsShown() then
 					tab:Show()
 				end
+				TAB_DATA[index].Hide = tab.Hide
 				tab.Hide = DoNothing
-				tab.SetAlpha = DoNothing
+
 				tab:SetHighlightTexture(nil)
 			end
 
@@ -296,12 +309,7 @@ local function UpdateChatFrames()
 				_G.FCF_ChatTabFadeFinished = DoNothing()
 			end
 		else
-			if TAB_DATA[index].dirty then
-				tab.Hide = TAB_DATA[index].Hide
-				tab.SetAlpha = TAB_DATA[index].SetAlpha
-
-				tab:SetAlpha(0)
-				tab:Hide()
+			if TAB_DATA[index].Hide then
 				tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
 
 				local texture = tab:GetHighlightTexture()
@@ -309,7 +317,10 @@ local function UpdateChatFrames()
 				texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
 				texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
 
-				TAB_DATA[index].dirty = nil
+				tab.Hide = TAB_DATA[index].Hide
+				TAB_DATA[index].Hide = nil
+
+				tab:Hide()
 			end
 
 			if orig_FCF_ChatTabFadeFinished then
@@ -665,8 +676,34 @@ local function GetMiscOptions()
 			name	= _G.MISCELLANEOUS,
 			type	= "group",
 			args = {
-				hide_border = {
+				always_show = {
 					order	= 10,
+					type	= "toggle",
+					name	= L["Always Show"],
+					desc	= L["Toggles between always showing the tab or only showing it on mouse-over."],
+					get	= function()
+							  return db.tab.always_show
+						  end,
+					set	= function(info, value)
+							  db.tab.always_show = value
+							  UpdateChatFrames()
+						  end,
+				},
+				fade_inactive = {
+					order	= 20,
+					type	= "toggle",
+					name	= L["Fade Inactive"],
+					desc	= L["The name of inactive tabs will be faded."],
+					get	= function()
+							  return db.tab.fade_inactive
+						  end,
+					set	= function(info, value)
+							  db.tab.fade_inactive = value
+							  UpdateChatFrames()
+						  end,
+				},
+				hide_border = {
+					order	= 30,
 					type	= "toggle",
 					name	= L["Hide Tab Border"],
 					desc	= L["Hides the tab border, leaving only the text visible."],
@@ -681,19 +718,6 @@ local function GetMiscOptions()
 							  end
 						  end,
 				},
-				always_show = {
-					order	= 20,
-					type	= "toggle",
-					name	= L["Always Show"],
-					desc	= L["Toggles between always showing the tab or only showing it on mouse-over."],
-					get	= function()
-							  return db.tab.always_show
-						  end,
-					set	= function(info, value)
-							  db.tab.always_show = value
-							  UpdateChatFrames()
-						  end,
-				}
 			},
 		}
 	end
