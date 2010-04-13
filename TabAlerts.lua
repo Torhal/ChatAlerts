@@ -301,7 +301,7 @@ local function UpdateChatFrames()
 		tab_flash:SetScript("OnShow", Flash_OnShow)
 		tab_flash:SetScript("OnHide", Flash_OnHide)
 
-		if db.tab.disable_flash then
+		if db.alert_flash.disable then
 			tab_flash:GetRegions():SetTexture(nil)
 		else
 			local color = db.alert_flash.colors
