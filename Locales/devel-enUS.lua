@@ -4,6 +4,7 @@ local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "enUS", true)
 
 if not L then return end
 
+L["Classic"]		= true
 L["Large"]		= true
 L["Outline"]		= true
 L["Bold Outline"]	= true
