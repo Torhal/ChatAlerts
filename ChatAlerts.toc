@@ -1,12 +1,12 @@
 ## Interface: 30300
-## Title: TabAlerts
+## Title: ChatAlerts
 ## Notes: Shows activity for hidden ChatFrames by making their tabs flash.
 ## Author: Torhal
 ## Version: @project-version@
 ## X-Date: @project-date-iso@
 ## X-Category: Chat & Communication
 ## OptionalDeps: Ace3, tekDebug
-## SavedVariables: TabAlertsDB
+## SavedVariables: ChatAlertsDB
 
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: Delayed
@@ -16,4 +16,4 @@ embeds.xml
 #@end-no-lib-strip@
 
 locales.xml
-TabAlerts.lua
+ChatAlerts.lua
