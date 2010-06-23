@@ -194,21 +194,19 @@ local function SetTabBorders(id_num)
 end
 
 local function GetTabColors(id_num)
-	local r, g, b
 	local frame_name = "ChatFrame"..id_num
+	local frame = _G[frame_name]
 	local flash = _G[frame_name.."TabFlash"]
+	local color
 
-	if _G[frame_name] == SELECTED_CHAT_FRAME then
-		local color = db.font.active
-		r, g, b = color.r, color.g, color.b
+	if frame == SELECTED_CHAT_FRAME or not frame.isDocked then
+		color = db.font.active
 	elseif flash and flash:IsShown() then
-		local color = db.font.alert
-		r, g, b = color.r, color.g, color.b
+		color = db.font.alert
 	else
-		local color = db.font.inactive
-		r, g, b = color.r, color.g, color.b
+		color = db.font.inactive
 	end
-	return r, g, b
+	return color.r, color.g, color.b
 end
 
 local SetFontStates
