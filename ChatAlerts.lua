@@ -254,119 +254,127 @@ local function Flash_OnHide(self)
 	UpdateChatFrames()
 end
 
+local function UpdateChatFrame(index)
+	local frame_name = "ChatFrame"..index
+	local chat_frame = _G[frame_name]
+	local tab = _G[frame_name.."Tab"]
+	local tab_flash = _G[frame_name.."TabFlash"]
+	local tab_glow = _G[frame_name.."TabGlow"]
+
+	if tab_glow then
+		tab_glow:Hide()
+		tab_glow.old_Show = tab_glow.Show
+		tab_glow.Show = DoNothing
+	end
+
+	local cache = TAB_DATA[index]
+
+	tab:SetScript("OnEnter", Tab_OnEnter)
+	tab:SetScript("OnLeave", Tab_OnLeave)
+
+	local r, g, b = GetTabColors(index)
+	SetFontStates(tab, r, g, b)
+
+	tab_flash:SetScript("OnShow", Flash_OnShow)
+	tab_flash:SetScript("OnHide", Flash_OnHide)
+
+	if not chat_frame.isDocked then
+		tab_flash:Hide()
+		tab_flash:GetRegions():SetTexture(nil)
+		_G.UIFrameFlashRemoveFrame(tab_flash)
+	end
+
+	if db.alert_flash.disable then
+		tab_flash:GetRegions():SetTexture(nil)
+	elseif chat_frame.isDocked then
+		local color = db.alert_flash.colors
+		local tex_id =  db.alert_flash.texture
+		local texture = tab_flash:GetRegions()
+		local y_offset = FLASH_OFFSET_Y[tex_id]
+
+		texture:SetTexture(FLASH_TEXTURES[tex_id])
+		texture:SetVertexColor(color.r, color.g, color.b)
+
+		texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
+		texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
+	end
+
+	SetTabBorders(index)
+
+	-- Store and unset the tab's SetAlpha method - it's used by the default UI in a way which breaks the
+	-- AddOn's options, so we'll handle it manually.
+	if not cache.SetAlpha then
+		cache.SetAlpha = tab.SetAlpha
+		tab.SetAlpha = DoNothing
+	end
+
+	if not db.tab.fade_inactive then
+		cache.SetAlpha(tab, 1)
+	else
+		if chat_frame ~= _G.SELECTED_DOCK_FRAME and not _G.UIFrameIsFlashing(tab_flash) then
+			cache.SetAlpha(tab, 0.5)
+		else
+			cache.SetAlpha(tab, 1)
+		end
+	end
+
+	if not db.tab.highlight then
+		if not cache.highlight then
+			cache.highlight = tab:GetHighlightTexture()
+			tab:SetHighlightTexture(nil)
+		end
+	elseif cache.highlight then
+		-- tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+		-- local texture = tab:GetHighlightTexture()
+		local highlight = cache.highlight
+		cache.highlight = nil
+
+		tab:SetHighlightTexture(highlight)
+
+		highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
+		highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
+	end
+
+	if db.tab.always_show then
+		if not cache.Hide then
+			if chat_frame.isDocked or chat_frame:IsShown() then
+				tab:Show()
+			end
+			cache.Hide = tab.Hide
+			tab.Hide = DoNothing
+		end
+
+		if not orig_FCF_ChatTabFadeFinished then
+			orig_FCF_ChatTabFadeFinished = _G.FCF_ChatTabFadeFinished
+			_G.FCF_ChatTabFadeFinished = DoNothing()
+		end
+	else
+		if cache.Hide then
+			tab.Hide = cache.Hide
+			cache.Hide = nil
+
+			if not tab_flash:IsShown() then
+				tab:Hide()
+			end
+		end
+
+		if orig_FCF_ChatTabFadeFinished then
+			_G.FCF_ChatTabFadeFinished = orig_FCF_ChatTabFadeFinished
+			orig_FCF_ChatTabFadeFinished = nil
+		end
+	end
+end
+
 -- Upvalued above
 function UpdateChatFrames()
 	for index = 1, _G.NUM_CHAT_WINDOWS do
-		local frame_name = "ChatFrame"..index
-		local chat_frame = _G[frame_name]
-		local tab = _G[frame_name.."Tab"]
-		local tab_flash = _G[frame_name.."TabFlash"]
-		local tab_glow = _G[frame_name.."TabGlow"]
+		local chat_frame = _G["ChatFrame"..index]
 
-		if tab_glow then
-			tab_glow:Hide()
-			tab_glow.old_Show = tab_glow.Show
-			tab_glow.Show = DoNothing
-		end
+		if chat_frame:IsShown() or chat_frame.isDocked then
+			CHAT_FRAMES[index] = chat_frame
+			TAB_DATA[index] = TAB_DATA[index] or {}
 
-		CHAT_FRAMES[index] = chat_frame
-		TAB_DATA[index] = TAB_DATA[index] or {}
-
-		local cache = TAB_DATA[index]
-
-		tab:SetScript("OnEnter", Tab_OnEnter)
-		tab:SetScript("OnLeave", Tab_OnLeave)
-
-		local r, g, b = GetTabColors(index)
-		SetFontStates(tab, r, g, b)
-
-		tab_flash:SetScript("OnShow", Flash_OnShow)
-		tab_flash:SetScript("OnHide", Flash_OnHide)
-
-		if db.alert_flash.disable or not chat_frame.isDocked then
-			tab_flash:GetRegions():SetTexture(nil)
-			tab_flash.no_textures = true
-
-			if not chat_frame.isDocked then
-				tab_flash:Hide()
-				_G.UIFrameFlashRemoveFrame(tab_flash)
-			end
-		elseif tab_flash.no_textures then
-			local color = db.alert_flash.colors
-			local tex_id =  db.alert_flash.texture
-			local texture = tab_flash:GetRegions()
-			local y_offset = FLASH_OFFSET_Y[tex_id]
-
-			texture:SetTexture(FLASH_TEXTURES[tex_id])
-			texture:SetVertexColor(color.r, color.g, color.b)
-
-			texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
-			texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
-
-			tab_flash.no_textures = nil
-		end
-
-		SetTabBorders(index)
-
-		-- Store and unset the tab's SetAlpha method - it's used by the default UI in a way which breaks the
-		-- AddOn's options, so we'll handle it manually.
-		if not cache.SetAlpha then
-			cache.SetAlpha = tab.SetAlpha
-			tab.SetAlpha = DoNothing
-		end
-
-		if not db.tab.fade_inactive then
-			cache.SetAlpha(tab, 1)
-		else
-			if chat_frame ~= _G.SELECTED_DOCK_FRAME and not _G.UIFrameIsFlashing(tab_flash) then
-				cache.SetAlpha(tab, 0.5)
-			else
-				cache.SetAlpha(tab, 1)
-			end
-		end
-
-		if not db.tab.highlight and not cache.highlight then
-			cache.highlight = tab:GetHighlightTexture()
-			tab:SetHighlightTexture(nil)
-		elseif cache.highlight then
-			-- tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
-			-- local texture = tab:GetHighlightTexture()
-			local highlight = cache.highlight
-			cache.highlight = nil
-
-			tab:SetHighlightTexture(highlight)
-
-			highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
-			highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
-		end
-
-		if db.tab.always_show then
-			if not cache.Hide then
-				if chat_frame.isDocked or chat_frame:IsShown() then
-					tab:Show()
-				end
-				cache.Hide = tab.Hide
-				tab.Hide = DoNothing
-			end
-
-			if not orig_FCF_ChatTabFadeFinished then
-				orig_FCF_ChatTabFadeFinished = _G.FCF_ChatTabFadeFinished
-				_G.FCF_ChatTabFadeFinished = DoNothing()
-			end
-		else
-			if cache.Hide then
-				tab.Hide = cache.Hide
-				cache.Hide = nil
-
-				if not tab_flash:IsShown() then
-					tab:Hide()
-				end
-			end
-
-			if orig_FCF_ChatTabFadeFinished then
-				_G.FCF_ChatTabFadeFinished = orig_FCF_ChatTabFadeFinished
-				orig_FCF_ChatTabFadeFinished = nil
-			end
+			UpdateChatFrame(index)
 		end
 	end
 end
