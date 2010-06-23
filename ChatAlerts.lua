@@ -302,15 +302,19 @@ local function UpdateChatFrames()
 			end
 		end
 
-		if not db.tab.highlight then
+		if not db.tab.highlight and not cache.highlight then
+			cache.highlight = tab:GetHighlightTexture()
 			tab:SetHighlightTexture(nil)
-		else
-			tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+		elseif cache.highlight then
+			-- tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+			-- local texture = tab:GetHighlightTexture()
+			local highlight = cache.highlight
+			cache.highlight = nil
 
-			local texture = tab:GetHighlightTexture()
+			tab:SetHighlightTexture(highlight)
 
-			texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
-			texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
+			highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
+			highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
 		end
 
 		if db.tab.always_show then
