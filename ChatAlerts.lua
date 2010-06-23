@@ -82,18 +82,21 @@ local LISTEN_EVENTS = {
 }
 
 local FLASH_TEXTURES = {
-	"Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight",
-	"Interface\\CHATFRAME\\ChatFrameTab",
-	"Interface\\GMChatFrame\\UI-GMStatusFrame-Pulse",
+	[[Interface\ChatFrame\ChatFrameTab-NewMessage]],
+	[[Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight]],
+	[[Interface\CHATFRAME\ChatFrameTab]],
+	[[Interface\GMChatFrame\UI-GMStatusFrame-Pulse]],
 }
 
 local FLASH_DESCRIPTIONS = {
 	_G.DEFAULT,
+	L["Classic"],
 	L["Outline"],
 	L["Bold Outline"],
 }
 
 local FLASH_OFFSET_Y = {
+	-3,
 	-5,
 	0,
 	-5,
