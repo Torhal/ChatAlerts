@@ -249,6 +249,8 @@ local function UpdateChatFrames()
 		CHAT_FRAMES[index] = chat_frame
 		TAB_DATA[index] = TAB_DATA[index] or {}
 
+		local cache = TAB_DATA[index]
+
 		tab:SetScript("OnEnter", Tab_OnEnter)
 		tab:SetScript("OnLeave", Tab_OnLeave)
 
@@ -277,8 +279,8 @@ local function UpdateChatFrames()
 
 		-- Store and unset the tab's SetAlpha method - it's used by the default UI in a way which breaks the
 		-- AddOn's options, so we'll handle it manually.
-		if not TAB_DATA[index].SetAlpha then
-			TAB_DATA[index].SetAlpha = tab.SetAlpha
+		if not cache.SetAlpha then
+			cache.SetAlpha = tab.SetAlpha
 			tab.SetAlpha = DoNothing
 		end
 
@@ -286,9 +288,9 @@ local function UpdateChatFrames()
 			TAB_DATA[index].SetAlpha(tab, 1)
 		else
 			if chat_frame ~= SELECTED_DOCK_FRAME then
-				TAB_DATA[index].SetAlpha(tab, 0.5)
+				cache.SetAlpha(tab, 0.5)
 			else
-				TAB_DATA[index].SetAlpha(tab, 1)
+				cache.SetAlpha(tab, 1)
 			end
 		end
 
@@ -304,11 +306,11 @@ local function UpdateChatFrames()
 		end
 
 		if db.tab.always_show then
-			if not TAB_DATA[index].Hide then
+			if not cache.Hide then
 				if chat_frame.isDocked or chat_frame:IsShown() then
 					tab:Show()
 				end
-				TAB_DATA[index].Hide = tab.Hide
+				cache.Hide = tab.Hide
 				tab.Hide = DoNothing
 			end
 
@@ -317,9 +319,9 @@ local function UpdateChatFrames()
 				_G.FCF_ChatTabFadeFinished = DoNothing()
 			end
 		else
-			if TAB_DATA[index].Hide then
-				tab.Hide = TAB_DATA[index].Hide
-				TAB_DATA[index].Hide = nil
+			if cache.Hide then
+				tab.Hide = cache.Hide
+				cache.Hide = nil
 
 				if not tab_flash:IsShown() then
 					tab:Hide()
