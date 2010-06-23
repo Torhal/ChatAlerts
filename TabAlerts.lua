@@ -167,8 +167,6 @@ local function FlashTab(event, ...)
 
 		for index2, type in pairs(type_list) do
 			if LISTEN_EVENTS[type] == event and db.listen[type] then
-				Debug(event, frame:GetName(), message and ("\""..message.."\"") or "empty message", player or "no player",
-				      language or "no language")
 				_G.FCF_FlashTab(frame)
 				break
 			end
@@ -404,7 +402,6 @@ function TabAlerts:OnEnable()
 			local reg_event = LISTEN_EVENTS[type]
 
 			self:RegisterEvent(reg_event, FlashTab)
-			Debug("OnEnable()", reg_event, "Registered")
 		end
 	end
 end
@@ -487,10 +484,8 @@ local function BuildMessageOptionArgs(arg_table, options)
 
 					  if value then
 						  TabAlerts:RegisterEvent(event, FlashTab)
-						  Debug(event, "Registered")
 					  else
 						  TabAlerts:UnregisterEvent(event)
-						  Debug(event, "Unregistered")
 					  end
 				  end,
 		}
