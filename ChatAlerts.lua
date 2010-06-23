@@ -285,9 +285,9 @@ local function UpdateChatFrames()
 		end
 
 		if not db.tab.fade_inactive then
-			TAB_DATA[index].SetAlpha(tab, 1)
+			cache.SetAlpha(tab, 1)
 		else
-			if chat_frame ~= SELECTED_DOCK_FRAME then
+			if chat_frame ~= _G.SELECTED_DOCK_FRAME and not _G.UIFrameIsFlashing(tab_flash) then
 				cache.SetAlpha(tab, 0.5)
 			else
 				cache.SetAlpha(tab, 1)
