@@ -202,7 +202,7 @@ local function GetTabColors(id_num)
 	local flash = _G[frame_name.."TabFlash"]
 	local color
 
-	if frame == SELECTED_CHAT_FRAME or not frame.isDocked then
+	if frame == _G.SELECTED_CHAT_FRAME or not frame.isDocked then
 		color = db.font.active
 	elseif flash and flash:IsShown() then
 		color = db.font.alert
