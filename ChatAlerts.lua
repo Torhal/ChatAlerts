@@ -232,7 +232,30 @@ end	-- do-block
 local function DoNothing ()
 end
 
-local function UpdateChatFrames()
+local function Tab_OnEnter(self, motion)
+	local r, g, b = GetTabColors(self:GetID())
+	SetFontStates(self, r, g, b, "OUTLINE")
+end
+
+local function Tab_OnLeave(self, motion)
+	local r, g, b = GetTabColors(self:GetID())
+	SetFontStates(self, r, g, b)
+end
+
+local UpdateChatFrames
+
+local function Flash_OnShow(self)
+	local color = db.font.alert
+	SetFontStates(self, color.r, color.g, color.b, "OUTLINE")
+	UpdateChatFrames()
+end
+
+local function Flash_OnHide(self)
+	UpdateChatFrames()
+end
+
+-- Upvalued above
+function UpdateChatFrames()
 	for index = 1, _G.NUM_CHAT_WINDOWS do
 		local frame_name = "ChatFrame"..index
 		local chat_frame = _G[frame_name]
@@ -346,25 +369,6 @@ local function UpdateChatFrames()
 			end
 		end
 	end
-end
-
-function Tab_OnEnter(self, motion)
-	local r, g, b = GetTabColors(self:GetID())
-	SetFontStates(self, r, g, b, "OUTLINE")
-end
-
-function Tab_OnLeave(self, motion)
-	local r, g, b = GetTabColors(self:GetID())
-	SetFontStates(self, r, g, b)
-end
-
-function Flash_OnShow(self)
-	local color = db.font.alert
-	SetFontStates(self, color.r, color.g, color.b, "OUTLINE")
-end
-
-function Flash_OnHide(self)
-	UpdateChatFrames()
 end
 
 -------------------------------------------------------------------------------
