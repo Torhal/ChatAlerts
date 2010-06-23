@@ -260,9 +260,15 @@ local function UpdateChatFrames()
 		tab_flash:SetScript("OnShow", Flash_OnShow)
 		tab_flash:SetScript("OnHide", Flash_OnHide)
 
-		if db.alert_flash.disable then
+		if db.alert_flash.disable or not chat_frame.isDocked then
 			tab_flash:GetRegions():SetTexture(nil)
-		else
+			tab_flash.no_textures = true
+
+			if not chat_frame.isDocked then
+				tab_flash:Hide()
+				_G.UIFrameFlashRemoveFrame(tab_flash)
+			end
+		elseif tab_flash.no_textures then
 			local color = db.alert_flash.colors
 			local tex_id =  db.alert_flash.texture
 			local texture = tab_flash:GetRegions()
@@ -273,6 +279,8 @@ local function UpdateChatFrames()
 
 			texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
 			texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
+
+			tab_flash.no_textures = nil
 		end
 
 		SetTabBorders(index)
