@@ -238,6 +238,13 @@ local function UpdateChatFrames()
 		local chat_frame = _G[frame_name]
 		local tab = _G[frame_name.."Tab"]
 		local tab_flash = _G[frame_name.."TabFlash"]
+		local tab_glow = _G[frame_name.."TabGlow"]
+
+		if tab_glow then
+			tab_glow:Hide()
+			tab_glow.old_Show = tab_glow.Show
+			tab_glow.Show = DoNothing
+		end
 
 		CHAT_FRAMES[index] = chat_frame
 		TAB_DATA[index] = TAB_DATA[index] or {}
@@ -351,14 +358,18 @@ end
 -------------------------------------------------------------------------------
 -- Override the default flash behavior of the tabs so they don't time out until accessed instead of fading after 60 seconds.
 -- Yanked straight out of the default UI's code and modified.
+-- TODO: Add options for the new TabGlow texture to either replace or compliment the old TabFlash.
 function _G.FCF_FlashTab(self)
-	local tabFlash = _G[self:GetName().."TabFlash"];
+	local name = self:GetName()
+	local tabFlash = _G[name.."TabFlash"]
 
-	if not self.isDocked or self == SELECTED_DOCK_FRAME or UIFrameIsFlashing(tabFlash) then
+	if not self.isDocked or self == _G.SELECTED_DOCK_FRAME or _G.UIFrameIsFlashing(tabFlash) then
 		return
 	end
-	tabFlash:Show()
-	UIFrameFlash(tabFlash, 0.25, 0.25, -1, nil, 0.5, 0.5);
+--	local tabGlow = _G[name.."TabGlow"]
+
+	_G.UIFrameFlash(tabFlash, 0.25, 0.25, -1, nil, 0.5, 0.5)
+--	_G.UIFrameFlash(tabGlow, 0.25, 0.25, -1, nil, 0.5, 0.5)
 end
 
 function TabAlerts:OnInitialize()
