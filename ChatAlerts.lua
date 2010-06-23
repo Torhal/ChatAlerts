@@ -867,13 +867,5 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 function TabAlerts:SetupOptions()
 	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, GetOptions)
-	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)--, nil, nil, "general")
-
-	-- self:RegisterSubOptions(_G.MESSAGE_TYPES, "message_types", GetMessageOptions)
-	-- self:RegisterSubOptions(_G.COLOR_PICKER, "color_picker", GetColorOptions)
+	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)
 end
-
---function TabAlerts:RegisterSubOptions(name, section, options_table)
--- 	suboptions[section] = options_table
--- 	self.options_frame[section] = AceConfigDialog:AddToBlizOptions(ADDON_NAME, name, ADDON_NAME, section)
--- end
