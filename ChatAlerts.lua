@@ -798,7 +798,7 @@ local function GetMiscOptions()
 					func	= function()
 							  local col = DEFAULT_OPTIONS.alert_flash.colors
 
-							  SetColorTable(db.alert_flash.colors, r, g, b)
+							  SetColorTable(db.alert_flash.colors, col.r, col.g, col.b)
 
 							  for option, value in pairs(DEFAULT_OPTIONS.alert_flash) do
 								  db.alert_flash[option] = value
