@@ -39,6 +39,7 @@ local LISTEN_EVENTS = {
 	["RAID"]			= "CHAT_MSG_RAID",
 	["RAID_LEADER"]			= "CHAT_MSG_RAID_LEADER",
 	["RAID_WARNING"]		= "CHAT_MSG_RAID_WARNING",
+	["BN_WHISPER"]			= "CHAT_MSG_BN_WHISPER",
 	["SAY"]				= "CHAT_MSG_SAY",
 	["WHISPER"]			= "CHAT_MSG_WHISPER",
 	["YELL"]			= "CHAT_MSG_YELL",
@@ -104,6 +105,7 @@ local FLASH_OFFSET_Y = {
 
 local DEFAULT_OPTIONS = {
 	listen = {
+		["BN_WHISPER"]		= true,
 		["GUILD"]		= true,
 		["GUILD_OFFICER"]	= true,
 		["PARTY"]		= true,
@@ -460,6 +462,7 @@ local CHAT_OPTIONS = {
 	"RAID",
 	"RAID_LEADER",
 	"RAID_WARNING",
+	"BN_WHISPER",
 	"SAY",
 	"WHISPER",
 	"YELL",
