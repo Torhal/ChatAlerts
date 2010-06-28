@@ -415,6 +415,7 @@ function TabAlerts:OnEnable()
 	UpdateChatFrames()
 	hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
 	hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
+	hooksecurefunc("FCFTab_UpdateColors", UpdateChatFrames)
 	hooksecurefunc("FCF_Close",
 		       function(self, fallback)
 			       local frame = fallback or self
