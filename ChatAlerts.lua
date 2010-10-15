@@ -322,19 +322,27 @@ local function UpdateChatFrame(index)
 
 	if not db.tab.highlight then
 		if not cache.highlight then
-			cache.highlight = tab:GetHighlightTexture()
-			tab:SetHighlightTexture(nil)
+			tab.leftHighlightTexture:Hide()
+			tab.middleHighlightTexture:Hide()
+			tab.rightHighlightTexture:Hide()
+			cache.highlight = true
+			-- cache.highlight = tab:GetHighlightTexture()
+			-- tab:SetHighlightTexture(nil)
 		end
 	elseif cache.highlight then
 		-- tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
 		-- local texture = tab:GetHighlightTexture()
-		local highlight = cache.highlight
+		-- local highlight = cache.highlight
+		tab.leftHighlightTexture:Show()
+		tab.middleHighlightTexture:Show()
+		tab.rightHighlightTexture:Show()
+
 		cache.highlight = nil
 
-		tab:SetHighlightTexture(highlight)
+		-- tab:SetHighlightTexture(highlight)
 
-		highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
-		highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
+		-- highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
+		-- highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
 	end
 
 	if db.tab.always_show then
@@ -359,6 +367,10 @@ local function UpdateChatFrame(index)
 				tab:Hide()
 			end
 		end
+
+		tab.leftSelectedTexture:Hide()
+		tab.middleSelectedTexture:Hide()
+		tab.rightSelectedTexture:Hide()
 
 		if orig_FCF_ChatTabFadeFinished then
 			_G.FCF_ChatTabFadeFinished = orig_FCF_ChatTabFadeFinished
