@@ -283,7 +283,10 @@ local function UpdateChatFrame(index)
 	if not chat_frame.isDocked then
 		tab_flash:Hide()
 		tab_flash:GetRegions():SetTexture(nil)
-		_G.UIFrameFlashRemoveFrame(tab_flash)
+
+		if _G.UIFrameIsFlashing(tab_flash) then
+			_G.UIFrameFlashStop(tab_flash)
+		end
 	end
 
 	if db.alert_flash.disable then
