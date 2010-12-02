@@ -425,14 +425,14 @@ end
 
 function TabAlerts:OnEnable()
 	UpdateChatFrames()
-	hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
-	hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
-	hooksecurefunc("FCFTab_UpdateColors", UpdateChatFrames)
-	hooksecurefunc("FCF_Close",
-		       function(self, fallback)
-			       local frame = fallback or self
-			       UIParent.Hide(_G[frame:GetName().."Tab"])
-		       end)
+	_G.hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
+	_G.hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
+	_G.hooksecurefunc("FCFTab_UpdateColors", UpdateChatFrames)
+	_G.hooksecurefunc("FCF_Close",
+			  function(self, fallback)
+				  local frame = fallback or self
+				  UIParent.Hide(_G[frame:GetName().."Tab"])
+			  end)
 
 	data_obj = LDB:NewDataObject(ADDON_NAME, {
 		type	= "launcher",
