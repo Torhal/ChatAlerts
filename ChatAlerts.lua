@@ -471,7 +471,7 @@ local CHAT_OPTIONS = {
 	"BATTLEGROUND_LEADER",
 	"EMOTE",
 	"GUILD",
-	"GUILD_OFFICER",
+	"OFFICER",
 	"GUILD_ACHIEVEMENT",
 	"PARTY",
 	"PARTY_LEADER",
@@ -529,7 +529,7 @@ local function BuildMessageOptionArgs(arg_table, options)
 			order	= index,
 			type	= "toggle",
 			width	= "double",
-			name	= _G[section] or _G[LISTEN_EVENTS[section]],
+			name	= _G[section] or _G[LISTEN_EVENTS[section]] or ("%s_%s"):format(section, _G.UNKNOWN),
 			desc	= _G.BINDING_NAME_TOGGLECHATTAB,
 			get	= function()
 					  return db.listen[section]
