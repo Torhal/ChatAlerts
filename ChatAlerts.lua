@@ -13,12 +13,12 @@ local ipairs = _G.ipairs
 -------------------------------------------------------------------------------
 local ADDON_NAME, namespace = ...
 
-local LibStub	= _G.LibStub
-local TabAlerts	= LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
-local LDB	= LibStub("LibDataBroker-1.1")
-local L		= LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+local LibStub = _G.LibStub
+local ChatAlerts = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
+local LDB = LibStub("LibDataBroker-1.1")
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
-local debugger	= _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
+local debugger = _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
 
 -------------------------------------------------------------------------------
 -- Constants.
@@ -415,7 +415,7 @@ function _G.FCF_FlashTab(self)
 --	_G.UIFrameFlash(tabGlow, 0.25, 0.25, -1, nil, 0.5, 0.5)
 end
 
-function TabAlerts:OnInitialize()
+function ChatAlerts:OnInitialize()
 	local defaults = {
 		global = DEFAULT_OPTIONS
 	}
@@ -426,7 +426,7 @@ function TabAlerts:OnInitialize()
 	self:SetupOptions()
 end
 
-function TabAlerts:OnEnable()
+function ChatAlerts:OnEnable()
 	UpdateChatFrames()
 	_G.hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
 	_G.hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
@@ -447,7 +447,7 @@ function TabAlerts:OnEnable()
 				  if options_frame:IsVisible() then
 					  options_frame:Hide()
 				  else
-					  _G.InterfaceOptionsFrame_OpenToCategory(TabAlerts.options_frame)
+					  _G.InterfaceOptionsFrame_OpenToCategory(ChatAlerts.options_frame)
 				  end
 			  end,
 	})
@@ -540,9 +540,9 @@ local function BuildMessageOptionArgs(arg_table, options)
 					  db.listen[section] = value
 
 					  if value then
-						  TabAlerts:RegisterEvent(event, FlashTab)
+						  ChatAlerts:RegisterEvent(event, FlashTab)
 					  else
-						  TabAlerts:UnregisterEvent(event)
+						  ChatAlerts:UnregisterEvent(event)
 					  end
 				  end,
 		}
@@ -892,7 +892,7 @@ end
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
-function TabAlerts:SetupOptions()
+function ChatAlerts:SetupOptions()
 	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, GetOptions)
 	self.options_frame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)
 end
