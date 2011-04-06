@@ -216,7 +216,7 @@ end
 
 local SetFontStates
 do
-	local base_font = GameFontNormalSmall
+	local base_font = _G.GameFontNormalSmall
 
 	function SetFontStates(self, r, g, b, flags)
 		-- The "self" parameter may be the tab's flash texture instead of the tab itself.
@@ -231,7 +231,7 @@ do
 	end
 end	-- do-block
 
-local function DoNothing ()
+local function DoNothing()
 end
 
 local function Tab_OnEnter(self, motion)
@@ -434,7 +434,7 @@ function ChatAlerts:OnEnable()
 	_G.hooksecurefunc("FCF_Close",
 			  function(self, fallback)
 				  local frame = fallback or self
-				  UIParent.Hide(_G[frame:GetName().."Tab"])
+				  _G.UIParent.Hide(_G[frame:GetName().."Tab"])
 			  end)
 
 	data_obj = LDB:NewDataObject(ADDON_NAME, {
@@ -686,7 +686,7 @@ local function GetColorOptions()
 							  SetColorTable(db.font.alert, r, g, b)
 							  UpdateChatFrames()
 						  end,
-				
+
 				},
 				alert_font_default = {
 					order	= 70,
