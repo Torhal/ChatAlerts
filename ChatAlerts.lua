@@ -75,9 +75,7 @@ local LISTEN_EVENTS = {
 	-- System messages.
 	-------------------------------------------------------------------------------
 	["AFK"]			= "CHAT_MSG_AFK",
---	["CHANNEL"]		= "CHAT_MSG_",
 	["DND"]			= "CHAT_MSG_DND",
---	["ERRORS"]		= "CHAT_MSG_RESTRICTED",
 	["IGNORED"]		= "CHAT_MSG_IGNORED",
 	["SYSTEM"]		= "CHAT_MSG_SYSTEM",
 }
@@ -329,23 +327,13 @@ local function UpdateChatFrame(index)
 			tab.middleHighlightTexture:Hide()
 			tab.rightHighlightTexture:Hide()
 			cache.highlight = true
-			-- cache.highlight = tab:GetHighlightTexture()
-			-- tab:SetHighlightTexture(nil)
 		end
 	elseif cache.highlight then
-		-- tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
-		-- local texture = tab:GetHighlightTexture()
-		-- local highlight = cache.highlight
 		tab.leftHighlightTexture:Show()
 		tab.middleHighlightTexture:Show()
 		tab.rightHighlightTexture:Show()
 
 		cache.highlight = nil
-
-		-- tab:SetHighlightTexture(highlight)
-
-		-- highlight:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, -7)
-		-- highlight:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, -7)
 	end
 
 	if db.tab.always_show then
@@ -523,9 +511,7 @@ local OTHER_OPTIONS = {
 
 local function BuildMessageOptionArgs(arg_table, options)
 	for index, section in ipairs(options) do
-		local low_section = section:lower()
-
-		arg_table[low_section] = {
+		arg_table[section:lower()] = {
 			order	= index,
 			type	= "toggle",
 			width	= "double",
