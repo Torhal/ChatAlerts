@@ -5,6 +5,7 @@
 <!--@non-debug@
 <Include file="Locales\enUS.lua"/>
 @end-non-debug@-->
+<Include file="Locales\itIT.lua"/>
 <Include file="Locales\koKR.lua"/>
 <Include file="Locales\frFR.lua"/>
 <Include file="Locales\zhCN.lua"/>
