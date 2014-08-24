@@ -154,6 +154,12 @@ local TAB_DATA = {}
 local orig_FCF_ChatTabFadeFinished
 
 -------------------------------------------------------------------------------
+-- Upvalued functions
+-------------------------------------------------------------------------------
+local UpdateChatFrames
+local UpdateChatFrame
+
+-------------------------------------------------------------------------------
 -- Local functions
 -------------------------------------------------------------------------------
 local function Debug(...)
@@ -171,6 +177,7 @@ local function FlashTab(event, ...)
 		for index2, type in pairs(type_list) do
 			if LISTEN_EVENTS[type] == event and db.listen[type] then
 				_G.FCF_StartAlertFlash(frame)
+				UpdateChatFrame(index)
 				break
 			end
 		end
@@ -242,13 +249,12 @@ local function Tab_OnLeave(self, motion)
 	SetFontStates(self, r, g, b)
 end
 
-local UpdateChatFrames
 
 local function Flash_OnHide(self)
 	UpdateChatFrames()
 end
 
-local function UpdateChatFrame(index)
+function UpdateChatFrame(index)
 	local frame_name = "ChatFrame" .. index
 	local chat_frame = _G[frame_name]
 
