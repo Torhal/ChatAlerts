@@ -30,3 +30,6 @@ externals:
     Libs/LibDataBroker-1.1:
       url: git://git.wowace.com/wow/libdatabroker-1-1/mainline.git
       tag: v1.1.4
+    Libs/LibChatAnims:
+      url: svn://svn.wowace.com/wow/libchatanims/mainline/trunk/LibChatAnims
+      tag: latest
