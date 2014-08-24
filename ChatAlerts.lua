@@ -170,7 +170,7 @@ local function FlashTab(event, ...)
 
 		for index2, type in pairs(type_list) do
 			if LISTEN_EVENTS[type] == event and db.listen[type] then
-				_G.FCF_FlashTab(frame)
+				_G.FCF_StartAlertFlash(frame)
 				break
 			end
 		end
@@ -199,12 +199,12 @@ end
 local function GetTabColors(id_num)
 	local frame_name = "ChatFrame" .. id_num
 	local frame = _G[frame_name]
-	local flash = _G[frame_name .. "TabFlash"]
+	local tab = _G[frame_name .. "Tab"]
 	local color
 
 	if frame == _G.SELECTED_CHAT_FRAME then
 		color = db.font.active
-	elseif flash and flash:IsVisible() then
+	elseif tab.glow and tab.alerting then
 		color = db.font.alert
 	else
 		color = db.font.inactive
@@ -244,12 +244,6 @@ end
 
 local UpdateChatFrames
 
-local function Flash_OnShow(self)
-	local color = db.font.alert
-	SetFontStates(self, color.r, color.g, color.b, "OUTLINE")
-	UpdateChatFrames()
-end
-
 local function Flash_OnHide(self)
 	UpdateChatFrames()
 end
@@ -262,37 +256,27 @@ local function UpdateChatFrame(index)
 	tab:SetScript("OnEnter", Tab_OnEnter)
 	tab:SetScript("OnLeave", Tab_OnLeave)
 
+	if chat_frame == _G.SELECTED_CHAT_FRAME and tab.alerting then
+		tab.alerting = nil
+		_G.FCF_StopAlertFlash(chat_frame)
+	end
+
 	local r, g, b = GetTabColors(index)
 	SetFontStates(tab, r, g, b)
 
-	local tab_glow = _G[frame_name .. "TabGlow"]
-	if tab_glow then
-		tab_glow:Hide()
-		tab_glow.old_Show = tab_glow.Show
-		tab_glow.Show = DoNothing
-	end
-
-	local tab_flash = _G[frame_name .. "TabFlash"]
-	tab_flash:SetScript("OnShow", Flash_OnShow)
-	tab_flash:SetScript("OnHide", Flash_OnHide)
-
-	if chat_frame == _G.SELECTED_CHAT_FRAME and _G.UIFrameIsFlashing(tab_flash) then
-		_G.UIFrameFlashStop(tab_flash)
-	end
+	local tab_glow = tab.glow
 
 	if db.alert_flash.disable then
-		tab_flash:GetRegions():SetTexture(nil)
+		tab_glow:Hide()
 	else
 		local color = db.alert_flash.colors
 		local tex_id = db.alert_flash.texture
-		local texture = tab_flash:GetRegions()
 		local y_offset = FLASH_OFFSET_Y[tex_id]
 
-		texture:SetTexture(FLASH_TEXTURES[tex_id])
-		texture:SetVertexColor(color.r, color.g, color.b)
-
-		texture:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
-		texture:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
+		tab_glow:SetTexture(FLASH_TEXTURES[tex_id])
+		tab_glow:SetVertexColor(color.r, color.g, color.b)
+		tab_glow:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, y_offset)
+		tab_glow:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, y_offset)
 	end
 	SetTabBorders(index)
 
@@ -308,7 +292,7 @@ local function UpdateChatFrame(index)
 	if not db.tab.fade_inactive then
 		cache.SetAlpha(tab, 1)
 	else
-		if chat_frame == _G.SELECTED_CHAT_FRAME or _G.UIFrameIsFlashing(tab_flash) then
+		if chat_frame == _G.SELECTED_CHAT_FRAME or tab.alering then
 			cache.SetAlpha(tab, 1)
 		else
 			cache.SetAlpha(tab, 0.5)
@@ -338,17 +322,12 @@ local function UpdateChatFrame(index)
 			cache.Hide = tab.Hide
 			tab.Hide = DoNothing
 		end
-
-		if not orig_FCF_ChatTabFadeFinished then
-			orig_FCF_ChatTabFadeFinished = _G.FCF_ChatTabFadeFinished
-			_G.FCF_ChatTabFadeFinished = DoNothing()
-		end
 	else
 		if cache.Hide then
 			tab.Hide = cache.Hide
 			cache.Hide = nil
 
-			if not tab_flash:IsVisible() then
+			if not tab_glow:IsVisible() then
 				tab:Hide()
 			end
 		end
@@ -356,11 +335,6 @@ local function UpdateChatFrame(index)
 		tab.leftSelectedTexture:Hide()
 		tab.middleSelectedTexture:Hide()
 		tab.rightSelectedTexture:Hide()
-
-		if orig_FCF_ChatTabFadeFinished then
-			_G.FCF_ChatTabFadeFinished = orig_FCF_ChatTabFadeFinished
-			orig_FCF_ChatTabFadeFinished = nil
-		end
 	end
 end
 
@@ -381,22 +355,6 @@ end
 -------------------------------------------------------------------------------
 -- Initialization.
 -------------------------------------------------------------------------------
--- Override the default flash behavior of the tabs so they don't time out until accessed instead of fading after 60 seconds.
--- Yanked straight out of the default UI's code and modified.
--- TODO: Add options for the new TabGlow texture to either replace or compliment the old TabFlash.
-function _G.FCF_FlashTab(self)
-	local name = self:GetName()
-	local tabFlash = _G[name .. "TabFlash"]
-
-	if self == _G.SELECTED_CHAT_FRAME or _G.UIFrameIsFlashing(tabFlash) then
-		return
-	end
-	--	local tabGlow = _G[name.."TabGlow"]
-
-	_G.UIFrameFlash(tabFlash, 0.25, 0.25, -1, nil, 0.5, 0.5)
-	--	_G.UIFrameFlash(tabGlow, 0.25, 0.25, -1, nil, 0.5, 0.5)
-end
-
 function ChatAlerts:OnInitialize()
 	local defaults = {
 		global = DEFAULT_OPTIONS
@@ -413,11 +371,10 @@ function ChatAlerts:OnEnable()
 	_G.hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
 	_G.hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
 	_G.hooksecurefunc("FCFTab_UpdateColors", UpdateChatFrames)
-	_G.hooksecurefunc("FCF_Close",
-		function(self, fallback)
-			local frame = fallback or self
-			_G.UIParent.Hide(_G[frame:GetName() .. "Tab"])
-		end)
+	_G.hooksecurefunc("FCF_Close", function(self, fallback)
+		local frame = fallback or self
+		_G.UIParent.Hide(_G[frame:GetName() .. "Tab"])
+	end)
 
 	data_obj = LDB:NewDataObject(ADDON_NAME, {
 		type = "launcher",
