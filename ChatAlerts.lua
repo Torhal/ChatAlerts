@@ -68,9 +68,9 @@ local LISTEN_EVENTS = {
 	-------------------------------------------------------------------------------
 	-- PvP messages.
 	-------------------------------------------------------------------------------
-	BG_SYSTEM_ALLIANCE = "CHAT_MSG_BG_SYSTEM_ALLIANCE",
-	BG_SYSTEM_HORDE = "CHAT_MSG_BG_SYSTEM_HORDE",
-	BG_SYSTEM_NEUTRAL = "CHAT_MSG_BG_SYSTEM_NEUTRAL",
+	BG_ALLIANCE = "CHAT_MSG_BG_SYSTEM_ALLIANCE",
+	BG_HORDE = "CHAT_MSG_BG_SYSTEM_HORDE",
+	BG_NEUTRAL = "CHAT_MSG_BG_SYSTEM_NEUTRAL",
 	-------------------------------------------------------------------------------
 	-- System messages.
 	-------------------------------------------------------------------------------
@@ -452,9 +452,9 @@ local COMBAT_OPTIONS = {
 }
 
 local PVP_OPTIONS = {
-	"BG_SYSTEM_ALLIANCE",
-	"BG_SYSTEM_HORDE",
-	"BG_SYSTEM_NEUTRAL",
+	"BG_ALLIANCE",
+	"BG_HORDE",
+	"BG_NEUTRAL",
 }
 
 local OTHER_OPTIONS = {
