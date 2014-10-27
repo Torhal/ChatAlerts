@@ -4,6 +4,7 @@
 local _G = getfenv(0)
 
 local string = _G.string
+local table = _G.table
 
 local pairs = _G.pairs
 local ipairs = _G.ipairs
@@ -23,62 +24,7 @@ local debugger = _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
 -------------------------------------------------------------------------------
 -- Constants.
 -------------------------------------------------------------------------------
-local LISTEN_EVENTS = {
-	-------------------------------------------------------------------------------
-	-- Player chat.
-	-------------------------------------------------------------------------------
-	ACHIEVEMENT = "CHAT_MSG_ACHIEVEMENT",
-	BATTLEGROUND = "CHAT_MSG_BATTLEGROUND",
-	BATTLEGROUND_LEADER = "CHAT_MSG_BATTLEGROUND_LEADER",
-	EMOTE = "CHAT_MSG_EMOTE",
-	GUILD = "CHAT_MSG_GUILD",
-	OFFICER = "CHAT_MSG_OFFICER",
-	GUILD_ACHIEVEMENT = "CHAT_MSG_GUILD_ACHIEVEMENT",
-	PARTY = "CHAT_MSG_PARTY",
-	PARTY_LEADER = "CHAT_MSG_PARTY_LEADER",
-	RAID = "CHAT_MSG_RAID",
-	RAID_LEADER = "CHAT_MSG_RAID_LEADER",
-	RAID_WARNING = "CHAT_MSG_RAID_WARNING",
-	BN_WHISPER = "CHAT_MSG_BN_WHISPER",
-	SAY = "CHAT_MSG_SAY",
-	WHISPER = "CHAT_MSG_WHISPER",
-	YELL = "CHAT_MSG_YELL",
-	-------------------------------------------------------------------------------
-	-- Creature messages.
-	-------------------------------------------------------------------------------
-	MONSTER_BOSS_EMOTE = "CHAT_MSG_RAID_BOSS_EMOTE",
-	MONSTER_BOSS_WHISPER = "CHAT_MSG_RAID_BOSS_WHISPER",
-	MONSTER_EMOTE = "CHAT_MSG_MONSTER_EMOTE",
-	MONSTER_SAY = "CHAT_MSG_MONSTER_SAY",
-	MONSTER_WHISPER = "CHAT_MSG_MONSTER_WHISPER",
-	MONSTER_YELL = "CHAT_MSG_MONSTER_YELL",
-	-------------------------------------------------------------------------------
-	-- Combat messages.
-	-------------------------------------------------------------------------------
-	COMBAT_FACTION_CHANGE = "CHAT_MSG_COMBAT_FACTION_CHANGE",
-	COMBAT_HONOR_GAIN = "CHAT_MSG_COMBAT_HONOR_GAIN",
-	COMBAT_MISC_INFO = "CHAT_MSG_COMBAT_MISC_INFO",
-	COMBAT_XP_GAIN = "CHAT_MSG_COMBAT_XP_GAIN",
-	LOOT = "CHAT_MSG_LOOT",
-	MONEY = "CHAT_MSG_MONEY",
-	OPENING = "CHAT_MSG_OPENING",
-	PET_INFO = "CHAT_MSG_PET_INFO",
-	SKILL = "CHAT_MSG_SKILL",
-	TRADESKILLS = "CHAT_MSG_TRADESKILLS",
-	-------------------------------------------------------------------------------
-	-- PvP messages.
-	-------------------------------------------------------------------------------
-	BG_ALLIANCE = "CHAT_MSG_BG_SYSTEM_ALLIANCE",
-	BG_HORDE = "CHAT_MSG_BG_SYSTEM_HORDE",
-	BG_NEUTRAL = "CHAT_MSG_BG_SYSTEM_NEUTRAL",
-	-------------------------------------------------------------------------------
-	-- System messages.
-	-------------------------------------------------------------------------------
-	AFK = "CHAT_MSG_AFK",
-	DND = "CHAT_MSG_DND",
-	IGNORED = "CHAT_MSG_IGNORED",
-	SYSTEM = "CHAT_MSG_SYSTEM",
-}
+local ChatTypeGroup = _G.ChatTypeGroup
 
 local FLASH_TEXTURES = {
 	[[Interface\ChatFrame\ChatFrameTab-NewMessage]],
@@ -105,6 +51,8 @@ local DEFAULT_OPTIONS = {
 	listen = {
 		BN_WHISPER = true,
 		GUILD = true,
+		INSTANCE_CHAT = true,
+		INSTANCE_CHAT_LEADER = true,
 		OFFICER = true,
 		PARTY = true,
 		PARTY_LEADER = true,
@@ -171,14 +119,16 @@ end
 local function FlashTab(event, ...)
 	local message, player, language = ...
 
-	for index, frame in pairs(CHAT_FRAMES) do
-		local type_list = frame.messageTypeList
+	for frame_index, frame in pairs(CHAT_FRAMES) do
+		for _, listen_type in pairs(frame.messageTypeList) do
+			local event_list = ChatTypeGroup[listen_type]
 
-		for index2, type in pairs(type_list) do
-			if LISTEN_EVENTS[type] == event and db.listen[type] then
-				_G.FCF_StartAlertFlash(frame)
-				UpdateChatFrame(index)
-				break
+			for event_index = 1, #event_list do
+				if event_list[event_index] == event and db.listen[listen_type] then
+					_G.FCF_StartAlertFlash(frame)
+					UpdateChatFrame(frame_index)
+					break
+				end
 			end
 		end
 	end
@@ -374,6 +324,7 @@ end
 
 function ChatAlerts:OnEnable()
 	UpdateChatFrames()
+
 	_G.hooksecurefunc("FCF_OpenNewWindow", UpdateChatFrames)
 	_G.hooksecurefunc("FCF_Tab_OnClick", UpdateChatFrames)
 	_G.hooksecurefunc("FCFTab_UpdateColors", UpdateChatFrames)
@@ -398,11 +349,13 @@ function ChatAlerts:OnEnable()
 	})
 
 	-- Register for configured events.
-	for type, toggled in pairs(db.listen) do
+	for listen_type, toggled in pairs(db.listen) do
 		if toggled then
-			local reg_event = LISTEN_EVENTS[type]
+			local event_list = ChatTypeGroup[listen_type]
 
-			self:RegisterEvent(reg_event, FlashTab)
+			for event_index = 1, #event_list do
+				self:RegisterEvent(event_list[event_index], FlashTab)
+			end
 		end
 	end
 end
@@ -410,26 +363,45 @@ end
 -------------------------------------------------------------------------------
 -- Configuration.
 -------------------------------------------------------------------------------
-local CHAT_OPTIONS = {
+local MESSAGE_TYPE_NAME_OVERRIDES = {
+	BG_ALLIANCE = _G["CHAT_MSG_BG_SYSTEM_ALLIANCE"],
+	BG_HORDE = _G["CHAT_MSG_BG_SYSTEM_HORDE"],
+	BG_NEUTRAL = _G["CHAT_MSG_BG_SYSTEM_NEUTRAL"]
+}
+
+local function GetSectionName(section)
+	return _G[section] or _G["CHAT_MSG_" .. section] or MESSAGE_TYPE_NAME_OVERRIDES[section] or ("%s_%s"):format(section, _G.UNKNOWN)
+end
+
+local function SectionNameSort(a, b)
+	return GetSectionName(a) < GetSectionName(b)
+end
+
+local CHAT_MESSAGE_OPTIONS = {
 	"ACHIEVEMENT",
 	"BATTLEGROUND",
 	"BATTLEGROUND_LEADER",
+	"BN_CONVERSATION",
+	"BN_WHISPER",
 	"EMOTE",
 	"GUILD",
-	"OFFICER",
 	"GUILD_ACHIEVEMENT",
+	"INSTANCE_CHAT",
+	"INSTANCE_CHAT_LEADER",
+	"OFFICER",
 	"PARTY",
 	"PARTY_LEADER",
 	"RAID",
 	"RAID_LEADER",
 	"RAID_WARNING",
-	"BN_WHISPER",
 	"SAY",
 	"WHISPER",
 	"YELL",
 }
 
-local CREATURE_OPTIONS = {
+table.sort(CHAT_MESSAGE_OPTIONS, SectionNameSort)
+
+local CREATURE_MESSAGE_OPTIONS = {
 	"MONSTER_BOSS_EMOTE",
 	"MONSTER_BOSS_WHISPER",
 	"MONSTER_EMOTE",
@@ -438,59 +410,79 @@ local CREATURE_OPTIONS = {
 	"MONSTER_YELL",
 }
 
-local COMBAT_OPTIONS = {
-	"COMBAT_FACTION_CHANGE",
+table.sort(CREATURE_MESSAGE_OPTIONS, SectionNameSort)
+
+local COMBAT_MESSAGE_OPTIONS = {
 	"COMBAT_HONOR_GAIN",
-	"COMBAT_MISC_INFO",
 	"COMBAT_XP_GAIN",
 	"LOOT",
+	"COMBAT_MISC_INFO",
 	"MONEY",
 	"OPENING",
-	"PET_INFO",
+	"COMBAT_FACTION_CHANGE",
 	"SKILL",
+	"TARGETICONS",
 	"TRADESKILLS",
 }
 
-local PVP_OPTIONS = {
+table.sort(COMBAT_MESSAGE_OPTIONS, SectionNameSort)
+
+local PET_MESSAGE_OPTIONS = {
+	"PET_INFO",
+	"PET_BATTLE_COMBAT_LOG",
+	"PET_BATTLE_INFO",
+}
+
+table.sort(PET_MESSAGE_OPTIONS, SectionNameSort)
+
+local PVP_MESSAGE_OPTIONS = {
 	"BG_ALLIANCE",
 	"BG_HORDE",
 	"BG_NEUTRAL",
 }
 
-local OTHER_OPTIONS = {
-	"AFK",
-	--	"CHANNEL",
-	"DND",
-	--	"ERRORS",
-	"IGNORED",
-	"SYSTEM",
-}
+table.sort(PVP_MESSAGE_OPTIONS, SectionNameSort)
+
+local UnassignedMessageOptions = {}
+for listen_category in pairs(ChatTypeGroup) do
+	UnassignedMessageOptions[listen_category] = true
+end
 
 local function BuildMessageOptionArgs(arg_table, options)
-	for index, section in ipairs(options) do
+	for index = 1, #options do
+		local section = options[index]
+		UnassignedMessageOptions[section] = nil
+
 		arg_table[section:lower()] = {
 			order = index,
 			type = "toggle",
 			width = "double",
-			name = _G[section] or _G[LISTEN_EVENTS[section]] or ("%s_%s"):format(section, _G.UNKNOWN),
+			name = GetSectionName(section),
 			desc = _G.BINDING_NAME_TOGGLECHATTAB,
 			get = function()
 				return db.listen[section]
 			end,
 			set = function(info, value)
-				local event = LISTEN_EVENTS[section]
-
 				db.listen[section] = value
 
+				local event_list = ChatTypeGroup[section]
 				if value then
-					ChatAlerts:RegisterEvent(event, FlashTab)
+					for event_index = 1, #event_list do
+						ChatAlerts:RegisterEvent(event_list[event_index], FlashTab)
+					end
+
 				else
-					ChatAlerts:UnregisterEvent(event)
+					for event_index = 1, #event_list do
+						ChatAlerts:UnregisterEvent(event_list[event_index])
+					end
 				end
 			end,
 		}
 	end
 end
+
+-- Populated in GetMessageOptions
+local OTHER_MESSAGE_OPTIONS = {}
 
 local message_options
 
@@ -520,25 +512,39 @@ local function GetMessageOptions()
 					type = "group",
 					args = {}
 				},
+				pet = {
+					name = _G.PET_INFO,
+					order = 40,
+					type = "group",
+					args = {}
+				},
 				pvp = {
 					name = _G.PVP,
-					order = 40,
+					order = 50,
 					type = "group",
 					args = {}
 				},
 				other = {
 					name = _G.OTHER,
-					order = 50,
+					order = 60,
 					type = "group",
 					args = {}
 				},
 			}
 		}
-		BuildMessageOptionArgs(message_options.args.chat.args, CHAT_OPTIONS)
-		BuildMessageOptionArgs(message_options.args.creature.args, CREATURE_OPTIONS)
-		BuildMessageOptionArgs(message_options.args.combat.args, COMBAT_OPTIONS)
-		BuildMessageOptionArgs(message_options.args.pvp.args, PVP_OPTIONS)
-		BuildMessageOptionArgs(message_options.args.other.args, OTHER_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.chat.args, CHAT_MESSAGE_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.creature.args, CREATURE_MESSAGE_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.combat.args, COMBAT_MESSAGE_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.pvp.args, PVP_MESSAGE_OPTIONS)
+		BuildMessageOptionArgs(message_options.args.pet.args, PET_MESSAGE_OPTIONS)
+
+		-- Build OTHER_MESSAGE_OPTIONS from what hasn't already been assigned.
+		for section in pairs(UnassignedMessageOptions) do
+			OTHER_MESSAGE_OPTIONS[#OTHER_MESSAGE_OPTIONS + 1] = section
+		end
+		table.sort(OTHER_MESSAGE_OPTIONS, SectionNameSort)
+
+		BuildMessageOptionArgs(message_options.args.other.args, OTHER_MESSAGE_OPTIONS)
 	end
 	return message_options
 end
