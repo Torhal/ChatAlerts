@@ -457,16 +457,21 @@ local function BuildMessageOptionArgs(arg_table, options)
 			set = function(info, value)
 				db.listen[section] = value
 
-				local event_list = ChatTypeGroup[section]
-				if value then
-					for event_index = 1, #event_list do
-						ChatAlerts:RegisterEvent(event_list[event_index], FlashTab)
-					end
+				local eventList = ChatTypeGroup[section]
 
-				else
-					for event_index = 1, #event_list do
-						ChatAlerts:UnregisterEvent(event_list[event_index])
+				if eventList then
+					if value then
+						for eventIndex = 1, #eventList do
+							ChatAlerts:RegisterEvent(eventList[eventIndex], FlashTab)
+						end
+
+					else
+						for eventIndex = 1, #eventList do
+							ChatAlerts:UnregisterEvent(eventList[eventIndex])
+						end
 					end
+				else
+					print(("ChatAlerts: Unhandled section '%s' - please report!"):format(tostring(section)))
 				end
 			end,
 		}
