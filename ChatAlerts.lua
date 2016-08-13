@@ -19,8 +19,6 @@ local ChatAlerts = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
 local LDB = LibStub("LibDataBroker-1.1")
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
-local debugger = _G.tekDebug and _G.tekDebug:GetFrame(ADDON_NAME)
-
 -------------------------------------------------------------------------------
 -- Constants.
 -------------------------------------------------------------------------------
@@ -110,12 +108,6 @@ local UpdateChatFrame
 -------------------------------------------------------------------------------
 -- Local functions
 -------------------------------------------------------------------------------
-local function Debug(...)
-	if debugger then
-		debugger:AddMessage(string.join(", ", ...))
-	end
-end
-
 local function FlashTab(event, ...)
 	local message, player, language = ...
 

@@ -5,7 +5,7 @@
 ## Version: @project-version@
 ## X-Date: @project-date-iso@
 ## X-Category: Chat & Communication
-## OptionalDeps: Ace3, tekDebug
+## OptionalDeps: Ace3
 ## SavedVariables: ChatAlertsDB
 
 ## LoadManagers: AddonLoader
