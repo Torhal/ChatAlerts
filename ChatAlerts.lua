@@ -341,12 +341,16 @@ function ChatAlerts:OnEnable()
 	})
 
 	-- Register for configured events.
-	for listen_type, toggled in pairs(db.listen) do
+	for listenType, toggled in pairs(db.listen) do
 		if toggled then
-			local event_list = ChatTypeGroup[listen_type]
+			local eventList = ChatTypeGroup[listenType]
 
-			for event_index = 1, #event_list do
-				self:RegisterEvent(event_list[event_index], FlashTab)
+			if eventList then
+				for eventIndex = 1, #eventList do
+					self:RegisterEvent(eventList[eventIndex], FlashTab)
+				end
+			else
+				print(("ChatAlerts: Unhandled section '%s' - please report!"):format(tostring(listenType)))
 			end
 		end
 	end
