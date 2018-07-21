@@ -1,13 +1,9 @@
 -------------------------------------------------------------------------------
 -- Localized Lua globals.
 -------------------------------------------------------------------------------
-local _G = getfenv(0)
-
-local string = _G.string
 local table = _G.table
 
 local pairs = _G.pairs
-local ipairs = _G.ipairs
 
 -------------------------------------------------------------------------------
 -- Addon namespace
@@ -97,7 +93,6 @@ local data_obj
 local db
 local CHAT_FRAMES = {}
 local TAB_DATA = {}
-local orig_FCF_ChatTabFadeFinished
 
 -------------------------------------------------------------------------------
 -- Upvalued functions
@@ -108,9 +103,7 @@ local UpdateChatFrame
 -------------------------------------------------------------------------------
 -- Local functions
 -------------------------------------------------------------------------------
-local function FlashTab(event, ...)
-	local message, player, language = ...
-
+local function FlashTab(event)
 	for frame_index, frame in pairs(CHAT_FRAMES) do
 		for _, listen_type in pairs(frame.messageTypeList) do
 			local event_list = ChatTypeGroup[listen_type]
@@ -181,19 +174,14 @@ end -- do-block
 local function DoNothing()
 end
 
-local function Tab_OnEnter(self, motion)
+local function Tab_OnEnter(self)
 	local r, g, b = GetTabColors(self:GetID())
 	SetFontStates(self, r, g, b, "OUTLINE")
 end
 
-local function Tab_OnLeave(self, motion)
+local function Tab_OnLeave(self)
 	local r, g, b = GetTabColors(self:GetID())
 	SetFontStates(self, r, g, b)
-end
-
-
-local function Flash_OnHide(self)
-	UpdateChatFrames()
 end
 
 function UpdateChatFrame(index)
@@ -329,7 +317,7 @@ function ChatAlerts:OnEnable()
 		type = "launcher",
 		label = ADDON_NAME,
 		icon = [[Interface\CHATFRAME\UI-ChatIcon-Chat-Up]],
-		OnClick = function(display, button)
+		OnClick = function()
 			local options_frame = _G.InterfaceOptionsFrame
 
 			if options_frame:IsVisible() then
@@ -349,8 +337,6 @@ function ChatAlerts:OnEnable()
 				for eventIndex = 1, #eventList do
 					self:RegisterEvent(eventList[eventIndex], FlashTab)
 				end
-			else
-				print(("ChatAlerts: Unhandled section '%s' - please report!"):format(tostring(listenType)))
 			end
 		end
 	end
@@ -458,7 +444,7 @@ local function BuildMessageOptionArgs(arg_table, options)
 			get = function()
 				return db.listen[section]
 			end,
-			set = function(info, value)
+			set = function(_, value)
 				db.listen[section] = value
 
 				local eventList = ChatTypeGroup[section]
@@ -474,8 +460,6 @@ local function BuildMessageOptionArgs(arg_table, options)
 							ChatAlerts:UnregisterEvent(eventList[eventIndex])
 						end
 					end
-				else
-					print(("ChatAlerts: Unhandled section '%s' - please report!"):format(tostring(section)))
 				end
 			end,
 		}
@@ -572,7 +556,7 @@ local function GetColorOptions()
 						local col = db.font.active
 						return col.r, col.g, col.b
 					end,
-					set = function(info, r, g, b)
+					set = function(_, r, g, b)
 						SetColorTable(db.font.active, r, g, b)
 						UpdateChatFrames()
 					end,
@@ -603,7 +587,7 @@ local function GetColorOptions()
 						local col = db.font.inactive
 						return col.r, col.g, col.b
 					end,
-					set = function(info, r, g, b)
+					set = function(_, r, g, b)
 						SetColorTable(db.font.inactive, r, g, b)
 						UpdateChatFrames()
 					end,
@@ -634,7 +618,7 @@ local function GetColorOptions()
 						local col = db.font.alert
 						return col.r, col.g, col.b
 					end,
-					set = function(info, r, g, b)
+					set = function(_, r, g, b)
 						SetColorTable(db.font.alert, r, g, b)
 						UpdateChatFrames()
 					end,
@@ -683,7 +667,7 @@ local function GetMiscOptions()
 					get = function()
 						return db.tab.always_show
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.tab.always_show = value
 						UpdateChatFrames()
 					end,
@@ -696,7 +680,7 @@ local function GetMiscOptions()
 					get = function()
 						return db.tab.fade_inactive
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.tab.fade_inactive = value
 						UpdateChatFrames()
 					end,
@@ -709,10 +693,10 @@ local function GetMiscOptions()
 					get = function()
 						return db.tab.hide_border
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.tab.hide_border = value
 
-						for index, frame in pairs(CHAT_FRAMES) do
+						for index in pairs(CHAT_FRAMES) do
 							SetTabBorders(index)
 						end
 					end,
@@ -724,7 +708,7 @@ local function GetMiscOptions()
 					get = function()
 						return db.tab.highlight
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.tab.highlight = value
 						UpdateChatFrames()
 					end,
@@ -760,7 +744,7 @@ local function GetMiscOptions()
 					get = function()
 						return db.alert_flash.texture
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.alert_flash.texture = value
 						UpdateChatFrames()
 					end,
@@ -775,7 +759,7 @@ local function GetMiscOptions()
 						local col = db.alert_flash.colors
 						return col.r, col.g, col.b
 					end,
-					set = function(info, r, g, b)
+					set = function(_, r, g, b)
 						SetColorTable(db.alert_flash.colors, r, g, b)
 						UpdateChatFrames()
 					end,
@@ -788,7 +772,7 @@ local function GetMiscOptions()
 					get = function()
 						return db.alert_flash.disable
 					end,
-					set = function(info, value)
+					set = function(_, value)
 						db.alert_flash.disable = value
 						UpdateChatFrames()
 					end,
