@@ -2,11 +2,7 @@ package-as: ChatAlerts
 
 license-output: LICENSE.txt
 
-enable-nolib-creation: yes
-
-ignore:
-  - .pkgmeta
-  - .docmeta
+enable-nolib-creation: no
 
 externals:
     Libs/LibStub:
