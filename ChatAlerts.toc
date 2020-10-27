@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 90001
 ## Title: ChatAlerts
 ## Notes: Shows activity for hidden ChatFrames by making their tabs flash.
 ## Author: Torhal
